@@ -1,6 +1,6 @@
 ## The Swan Programming Language Roadmap
 
-*NOTE: Swan is highly WIP. There may be design flaws and oversights. Please file an issue if you find one.*
+*NOTE: Swan is highly WIP. There may be design flaws and oversights. Please open an issue if you find one.*
 
 Swan intends to be a high-performance language for systems/application programming without sacrificing on ergonomics.
 
@@ -36,11 +36,13 @@ Now let me explain how Swan is going to be memory safe, fast and ergonomic at th
 * Record types are of two kinds: objects and structs. Objects are reference counted, while structs
   are not.
 
-* There are 4 kinds of types:
+* There are 6 kinds of types:
   1) Copy types
   2) Concrete types
   3) Alias types
-  4) Shared types
+  4) Ref types
+  5) Affine types
+  6) Shared types
 
 * Primitive types like int, float and bool are copy types. They can never be aliased.
   ```
@@ -62,8 +64,42 @@ Now let me explain how Swan is going to be memory safe, fast and ergonomic at th
   ```
   When object types are coerced to an alias refcounts are modified accordingly.
 
-* Collection types like
+* Collection types like arrays and strings are object types that have an additional "interior" reference count to prevent invalidation.
+  ```
+  var list: [Foo] = ...
+  var foo = list[0] // 'foo' is of type 'alias Foo'. 
+  // Here the interior refcount gets incremented and is retained still foo gets out of scope.
+  ```
 
+* Object types need to be 'ref' to be aliased. As said earlier aliases cannot be aliased if it is of an object type.
+  ```
+  object Foo {}
 
+  def f1(foo: Foo) {
+      var foo2: Foo = foo // Disallowed: foo is an alias
+  }
 
+  def f2(foo: ref Foo) {
+      var foo2: Foo = foo // Fine!
+  }
+  ```
 
+* Affine types are move only types. Affine-ness propagate downwards.
+
+  ```
+  struct Foo {
+    bar: Bar
+  }
+  ...
+  var foo: affine Foo = Foo{} 
+  // The expression 'foo.bar' is of type 'affine Bar' rather than simply 'Bar'.
+  ```
+  Affine types can be safely moved between threads. Affine object types can not be assigned to
+  other objects:
+  ```
+  object Foo {}
+  ...
+  var foo: affine Foo = ...
+  var foo2: Foo = foo // Disallowed.
+  ```
+  Affine types cannot be moved if currently aliased.
