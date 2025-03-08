@@ -69,10 +69,10 @@ Now let me explain how Swan is going to be memory safe, fast and ergonomic at th
   ```
   var list: [Foo] = ...
   var foo = list[0] // 'foo' is of type 'alias Foo'. 
-  // Here the interior refcount gets incremented and is retained still foo gets out of scope.
+  // Here the interior refcount gets incremented and is retained until foo gets out of scope.
   ```
 
-* Object types need to be 'ref' to be aliased. As said earlier aliases cannot be aliased if it is of an object type.
+* Object types need to be 'ref' to be aliased. As said earlier aliases cannot be aliased even if it is of an object type.
   ```
   object Foo {}
 
