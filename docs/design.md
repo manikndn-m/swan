@@ -23,8 +23,18 @@ Most predominant languages only satisfy one or some of the above:
   and high memory usage. GC'd languages often have FFI issues. GC'd languages often end up
   "living in their own island".
   
-* 
+* Borrow checked languages like Rust have severe ergonomic issues because of requiring the
+  programmer to code in a specific way.
+
+* Languages like Nim and D come *very* close but both lack a coherent vision. For instance, neither 
+  language is memory safe (despite the latter having a GC). Nim's concurrency story also leaves a lot to be desired.
  
+Now let me explain how Swan is going to be memory safe, fast and ergonomic at the same time. Swan's memory management is quite similar to Nim: object types that are automatic *non-atomic* reference counted and value types that are not RC'd. Special types are atomically reference counted and are allowed to be shared between threads. More on that later.
+
+### A Brief Overview of the Type System
+
+* Record types are of two kinds: objects and structs. Objects are reference counted, while structs
+  are not.
 
 
 
