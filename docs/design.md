@@ -62,7 +62,8 @@ Now let me explain how Swan is going to be memory safe, fast and ergonomic at th
   var foo3: Foo = Foo{}
   foo2 = foo3 // Disallowed!
   ```
-  When object types are coerced to an alias refcounts are modified accordingly.
+  When object types are coerced to an alias refcounts are modified accordingly. Function parameters
+  are by default aliases.
 
 * Collection types like arrays and strings are object types that have an additional "interior" reference count to prevent invalidation.
   ```
@@ -103,3 +104,28 @@ Now let me explain how Swan is going to be memory safe, fast and ergonomic at th
   var foo2: Foo = foo // Disallowed.
   ```
   Affine types cannot be moved if currently aliased.
+  ```
+  var foo: affine Foo = ...
+  var fooalias: alias Foo = foo
+  channel.send(move foo) // Disallowed!
+  ```
+
+* Shared types are object types that can be safely shared between threads. Shared values 
+  are always protected by a mutex. Shared values cannot be accessed without locking:
+  ```
+  var foo: shared Foo = ...
+  foo.bar // Disallowed
+
+  // "Lock" expression yields an alias.
+  var fooalias: alias Foo = lock foo
+  fooalias.bar // Fine
+  // The lock is held until fooalias goes out of scope.
+  ```
+  Shared values are always atomically RC'd.
+
+* Implicit coercion table.
+  ```
+  object or struct T -> alias T
+  object T -> ref T
+  shared T cannot be used at all without locking.
+  ```
