@@ -29,12 +29,40 @@ Most predominant languages only satisfy one or some of the above:
 * Languages like Nim and D come *very* close but both lack a coherent vision. For instance, neither 
   language is memory safe (despite the latter having a GC). Nim's concurrency story also leaves a lot to be desired.
  
-Now let me explain how Swan is going to be memory safe, fast and ergonomic at the same time. Swan's memory management is quite similar to Nim: object types that are automatic *non-atomic* reference counted and value types that are not RC'd. Special types are atomically reference counted and are allowed to be shared between threads. More on that later.
+Now let me explain how Swan is going to be memory safe, fast and ergonomic at the same time. Swan's memory management is quite similar to Nim: object types that are automatic *non-atomic* reference counted and value types that are not RC'd. Special "shared" types are atomically reference counted and are allowed to be shared between threads. More on that in the next section.
 
 ### A Brief Overview of the Type System
 
 * Record types are of two kinds: objects and structs. Objects are reference counted, while structs
   are not.
+
+* There are 4 kinds of types:
+  1) Copy types
+  2) Concrete types
+  3) Alias types
+  4) Shared types
+
+* Primitive types like int, float and bool are copy types. They can never be aliased.
+  ```
+  var a = 3
+  var b = a
+  ```
+
+* Alias types are a special types that are crucial to maintain memory safety. Record types are implicitly aliased. Alias types can not be reassigned (like Java's final):
+  ```
+  struct Foo {
+    ...
+  }
+
+  ...
+  var foo: Foo = Foo{} // foo is a concrete type 'Foo'
+  var foo2 = foo // foo2 is of type 'alias Foo'
+  var foo3: Foo = Foo{}
+  foo2 = foo3 // Disallowed!
+  ```
+  When object types are coerced to an alias refcounts are modified accordingly.
+
+* Collection types like
 
 
 
