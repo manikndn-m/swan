@@ -74,6 +74,11 @@ void scanner_tests()
 
 void parser_tests()
 {
+    Arena ast_arena;
+#define PARSE(CODE)                                                            \
+    Parser p(CODE, 0, "<test>", &ast_arena);                                   \
+    auto blk = p.parse();
+
     {
     }
 }

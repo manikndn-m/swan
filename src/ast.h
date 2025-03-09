@@ -29,24 +29,16 @@ struct AstNode {
 #define AST_NODE(T, K)                                                         \
     T() : AstNode(K) {}
 
-#define STMT_NODE(T, K)                                                        \
-    T() : StmtNode(K) {}
-
-struct StmtNode : AstNode {
-    StmtNode *next = nullptr;
-    StmtNode(AstNodeKind kind) : AstNode(kind) {}
-};
-
-struct ImportStmt : StmtNode {
+struct ImportStmt : AstNode {
     Path path;
     bool as_specified;
     StringRef alias;
 
-    STMT_NODE(ImportStmt, ak_import);
+    AST_NODE(ImportStmt, ak_import);
 };
 
 struct Block {
-    StmtNode *first;
+    Span<AstNode *> stmts;
 };
 
 } // namespace swan

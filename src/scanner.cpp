@@ -5,8 +5,30 @@
 
 namespace swan {
 
+void Scanner::take_while(std::string &acc, std::function<bool(char)> pred)
+{
+    acc.clear();
+    while (pred(*it)) {
+        acc += *it;
+        advance();
+        if (eof()) {
+            break;
+        }
+    }
+}
+
 void Scanner::next(Token &out)
 {
+    auto is_keyword = [&](const std::string &s, TokenKind &out) {
+        auto key_it = keywordmap.find(s);
+        if (key_it == keywordmap.end()) {
+            return false;
+        }
+
+        out = key_it->second;
+        return true;
+    };
+
     auto scan_escseq = [&](char endc) {
         assert(*it == '\\');
         advance();
@@ -93,7 +115,7 @@ void Scanner::next(Token &out)
             out.ival = std::stoi(accum);
         }
 
-        if (!eof() && *it == 'f' || *it == 'i') {
+        if (!eof() && (*it == 'f' || *it == 'i')) {
         }
     } else if (*it == '"') {
         accum.clear();

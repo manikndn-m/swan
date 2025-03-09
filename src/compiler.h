@@ -3,6 +3,7 @@
 #include "ast.h"
 #include "parser.h"
 #include "util.h"
+#include <optional>
 
 namespace swan {
 
@@ -21,12 +22,28 @@ struct Module {
 
 // The entry point to the compiler.
 class Compiler {
-    std::vector<fs::path> msearchpaths;
+    std::vector<fs::path> searchpaths; // Module search paths
+
+    struct DepNode {
+        std::vector<DepNode *> deps;
+    };
+
+    struct DepGraph {
+        DepNode *root;
+    };
+
+    std::optional<fs::path> searchmod(Path p);
+    DepGraph build_from(fs::path mainmod);
 
   public:
-    Compiler() {}
+    Compiler()
+    {
+    }
 
-    void add_searchpath(fs::path p) { msearchpaths.push_back(p); }
+    void add_searchpath(fs::path p)
+    {
+        searchpaths.push_back(p);
+    }
 
     void compile_main(fs::path mainmod_path);
 };
