@@ -62,6 +62,7 @@ void scanner_tests()
         TOKENIZE("if 2 {42} ");
         EXP(check_kinds(
             vec, {tok_if, tok_intlit, tok_obrace, tok_intlit, tok_cbrace}))
+        EXP(vec[3].ival == 42);
     }
 
     {

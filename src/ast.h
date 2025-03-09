@@ -9,6 +9,12 @@ struct Path {
     Span<StringRef> items;
 };
 
+enum TypeAnnotKind {};
+
+struct TypeAnnot {
+    TypeAnnotKind kind;
+};
+
 enum AstNodeKind {
     ak_import,
 };
@@ -23,12 +29,24 @@ struct AstNode {
 #define AST_NODE(T, K)                                                         \
     T() : AstNode(K) {}
 
-struct ImportStmt : AstNode {
+#define STMT_NODE(T, K)                                                        \
+    T() : StmtNode(K) {}
+
+struct StmtNode : AstNode {
+    StmtNode *next = nullptr;
+    StmtNode(AstNodeKind kind) : AstNode(kind) {}
+};
+
+struct ImportStmt : StmtNode {
     Path path;
     bool as_specified;
     StringRef alias;
 
-    AST_NODE(ImportStmt, ak_import);
+    STMT_NODE(ImportStmt, ak_import);
+};
+
+struct Block {
+    StmtNode *first;
 };
 
 } // namespace swan

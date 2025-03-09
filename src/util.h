@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <iostream>
+#include <memory_resource>
 #include <span>
 
 namespace swan {
@@ -24,5 +25,7 @@ void print(T t, U u, Args... args)
 template <typename T>
 using Span = std::span<T>;
 using StringRef = Span<char>;
+
+using Arena = std::pmr::monotonic_buffer_resource;
 
 } // namespace swan
