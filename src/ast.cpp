@@ -2,13 +2,12 @@
 
 namespace swan {
 
-void dbgprint_expr(AstNode *expr, int level)
-{
+void dbgprint_expr(AstNode *expr, int level) {
     int i = level;
     while (i--) {
         print("-");
     }
-    
+
     print(" ");
 
     if (expr->kind == ak_intlit) {

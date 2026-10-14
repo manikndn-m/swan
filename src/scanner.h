@@ -18,26 +18,28 @@ class Scanner {
     std::string accum, accum2;
     std::unordered_map<std::string, TokenKind> keywordmap;
 
-    bool eof() const { return it >= end; }
+    bool eof() const {
+        return it >= end;
+    }
 
-    void advance()
-    {
+    void advance() {
         it++;
         pos.col++;
     }
 
-    static bool is_whitespace(char c) { return c == ' ' || c == '\t'; }
+    static bool is_whitespace(char c) {
+        return c == ' ' || c == '\t';
+    }
 
-    int parse_num()
-    {
+    int parse_num() {
         accum2.clear();
         take_while(accum, [](char c) { return std::isdigit(c); });
         int num = std::stoi(accum2);
         return num;
     }
 
-    template <typename... Args> void err(std::string msg)
-    {
+    template <typename... Args>
+    void err(std::string msg) {
         ScannerError e;
         e.msg = msg;
         e.pos = pos;
@@ -47,8 +49,7 @@ class Scanner {
     void take_while(std::string &acc, std::function<bool(char)> pred);
 
   public:
-    Scanner(std::string program, int fileid, std::string filename)
-    {
+    Scanner(std::string program, int fileid, std::string filename) {
         this->program = program;
         this->filename = filename;
         this->it = this->program.begin();
@@ -59,7 +60,9 @@ class Scanner {
 #undef K
     }
 
-    SourcePos curpos() const { return pos; }
+    SourcePos curpos() const {
+        return pos;
+    }
 
     void next(Token &out);
 };

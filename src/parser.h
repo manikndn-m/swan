@@ -19,30 +19,26 @@ class Parser {
     Arena *ast_arena;
 
     template <typename T>
-    T *alloc()
-    {
+    T *alloc() {
         auto ptr = (T *)ast_arena->allocate(sizeof(T));
         new (ptr) T();
         return ptr;
     }
 
     template <typename T>
-    Span<T> vec_to_span(const std::vector<T> &v)
-    {
+    Span<T> vec_to_span(const std::vector<T> &v) {
         T *ptr = (T *)ast_arena->allocate(sizeof(T) * v.size());
         memcpy(ptr, v.data(), sizeof(T) * v.size());
         return Span<T>(ptr, v.size());
     }
 
-    StringRef alloc_str(std::string str)
-    {
+    StringRef alloc_str(std::string str) {
         char *ptr = (char *)ast_arena->allocate(sizeof(char) * str.size());
         memcpy(ptr, str.data(), sizeof(char) * str.size());
         return StringRef(ptr, str.size());
     }
 
-    StringRef consume_id()
-    {
+    StringRef consume_id() {
         expect(tok_id);
         StringRef sref = alloc_str(tok.idval);
         next(); // Skip the identifier
@@ -50,8 +46,7 @@ class Parser {
     }
 
     template <typename... Args>
-    void err(std::string msg)
-    {
+    void err(std::string msg) {
         ParserError e;
         e.msg = msg;
         e.pos = s.curpos();
@@ -59,8 +54,7 @@ class Parser {
         throw e;
     }
 
-    void expect(TokenKind k)
-    {
+    void expect(TokenKind k) {
         if (tok.kind != k) {
             Token expected = Token{.kind = k};
             err("expected a '" + expected.to_string() + "' but found a " +
@@ -68,34 +62,29 @@ class Parser {
         }
     }
 
-    void expect_and_skip(TokenKind k)
-    {
+    void expect_and_skip(TokenKind k) {
         expect(k);
         next();
     }
 
-    void ignore_newlines()
-    {
+    void ignore_newlines() {
         while (tok.kind == tok_linebreak) {
             next();
         }
     }
 
-    void next()
-    {
+    void next() {
         s.next(tok);
     }
 
-    bool eof() const
-    {
+    bool eof() const {
         return tok.kind == tok_eof;
     }
 
   public:
     Parser(std::string program, int fileid, std::string filename,
            Arena *ast_arena)
-        : s(program, fileid, filename)
-    {
+        : s(program, fileid, filename) {
         this->ast_arena = ast_arena;
     }
 
@@ -125,8 +114,7 @@ class Parser {
     FunctionSignatureDef parse_func_sign();
     FunctionProtoDef parse_func_proto();
 
-    Block *parse_brace_block()
-    {
+    Block *parse_brace_block() {
         ignore_newlines();
         expect_and_skip(tok_obrace);
         ignore_newlines();

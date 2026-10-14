@@ -66,16 +66,14 @@ struct AstNode {
     SourcePos pos;
     Visibility visibility;
 
-    AstNode(AstNodeKind kind) : kind(kind)
-    {
+    AstNode(AstNodeKind kind) : kind(kind) {
     }
 
-    virtual void dummy()
-    {
+    virtual void dummy() {
     }
 
-    template <typename T> T *as()
-    {
+    template <typename T>
+    T *as() {
         auto ptr = dynamic_cast<T *>(this);
         if (ptr == nullptr) {
             panic("casting to the wrong type");
@@ -85,8 +83,7 @@ struct AstNode {
 };
 
 #define AST_NODE(T, K)                                                         \
-    T() : AstNode(K)                                                           \
-    {                                                                          \
+    T() : AstNode(K) {                                                         \
     }
 
 enum UnaryOp {

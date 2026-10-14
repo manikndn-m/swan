@@ -2,8 +2,7 @@
 
 namespace swan {
 
-std::string Token::to_string() const
-{
+std::string Token::to_string() const {
     switch (kind) {
     case tok_id:
         return "identifier '" + idval + "'";

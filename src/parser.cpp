@@ -4,8 +4,7 @@
 
 namespace swan {
 
-Path Parser::parse_path()
-{
+Path Parser::parse_path() {
     expect(tok_id);
 
     Path p;
@@ -21,13 +20,11 @@ Path Parser::parse_path()
     return p;
 }
 
-AstNode *Parser::parse_expr()
-{
+AstNode *Parser::parse_expr() {
     return parse_assign();
 }
 
-BinOp tok_to_binop(TokenKind k)
-{
+BinOp tok_to_binop(TokenKind k) {
     switch (k) {
 #define BO(X, Y)                                                               \
     case Y:                                                                    \
@@ -42,14 +39,12 @@ BinOp tok_to_binop(TokenKind k)
     return BinOp(0);
 }
 
-bool tok_is_one_of(TokenKind k, std::vector<TokenKind> v)
-{
+bool tok_is_one_of(TokenKind k, std::vector<TokenKind> v) {
     return std::find(v.begin(), v.end(), k) != v.end();
 }
 
 #define OPFUNC(FN, NEXTFN, TOKS)                                               \
-    AstNode *Parser::FN()                                                      \
-    {                                                                          \
+    AstNode *Parser::FN() {                                                    \
         auto result = NEXTFN();                                                \
         while (tok_is_one_of(tok.kind, TOKS)) {                                \
             auto left = result;                                                \
@@ -82,8 +77,7 @@ OPFUNC(parse_addsub, parse_muldiv, addsub)
 std::vector<TokenKind> muldiv{tok_mul, tok_div};
 OPFUNC(parse_muldiv, parse_prefix, muldiv)
 
-AstNode *Parser::parse_prefix()
-{
+AstNode *Parser::parse_prefix() {
     UnaryExpr *expr = nullptr;
 
     if (tok.kind == tok_not || tok.kind == tok_plus || tok.kind == tok_minus) {
@@ -102,8 +96,7 @@ AstNode *Parser::parse_prefix()
     return parse_term();
 }
 
-AstNode *Parser::parse_term()
-{
+AstNode *Parser::parse_term() {
     AstNode *result = nullptr;
     switch (tok.kind) {
     case tok_intlit: {
@@ -171,8 +164,7 @@ AstNode *Parser::parse_term()
     return result;
 }
 
-FunctionSignatureDef Parser::parse_func_sign()
-{
+FunctionSignatureDef Parser::parse_func_sign() {
     FunctionSignatureDef sign;
     expect_and_skip(tok_oparen);
 
@@ -207,8 +199,7 @@ FunctionSignatureDef Parser::parse_func_sign()
     return sign;
 }
 
-FunctionProtoDef Parser::parse_func_proto()
-{
+FunctionProtoDef Parser::parse_func_proto() {
     FunctionProtoDef proto;
     if (tok.kind == tok_oparen) {
         proto.has_receiver = true;
@@ -225,8 +216,7 @@ FunctionProtoDef Parser::parse_func_proto()
     return proto;
 }
 
-AstNode *Parser::parse_stmt()
-{
+AstNode *Parser::parse_stmt() {
     switch (tok.kind) {
     case tok_import: {
         next(); // Skip the 'import'
@@ -312,8 +302,7 @@ AstNode *Parser::parse_stmt()
     return stmt;
 }
 
-TypeAnnot *Parser::parse_typeann()
-{
+TypeAnnot *Parser::parse_typeann() {
     TypeAnnot *ann = alloc<TypeAnnot>();
     switch (tok.kind) {
     case tok_uint16:
@@ -368,8 +357,7 @@ TypeAnnot *Parser::parse_typeann()
     return ann;
 }
 
-Block *Parser::parse_block(TokenKind endtok)
-{
+Block *Parser::parse_block(TokenKind endtok) {
     Block *block = alloc<Block>();
     std::vector<AstNode *> stmts;
     while (tok.kind != endtok) {
@@ -394,8 +382,7 @@ Block *Parser::parse_block(TokenKind endtok)
     return block;
 }
 
-Block *Parser::parse()
-{
+Block *Parser::parse() {
     // Read the first token into 'tok'.
     next();
     return parse_block(tok_eof);

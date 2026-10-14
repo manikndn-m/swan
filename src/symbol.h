@@ -63,18 +63,15 @@ class Scope {
     std::unordered_map<StringRef, Symbol> symbols;
 
   public:
-    Scope(Scope *outer)
-    {
+    Scope(Scope *outer) {
         this->outer = outer;
     }
 
-    void add(StringRef name, Symbol s)
-    {
+    void add(StringRef name, Symbol s) {
         symbols[name] = s;
     }
 
-    std::optional<Symbol> find(StringRef name)
-    {
+    std::optional<Symbol> find(StringRef name) {
         auto it = symbols.find(name);
         if (it == symbols.end()) {
             if (outer) {

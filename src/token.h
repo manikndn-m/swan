@@ -10,7 +10,8 @@ struct SourcePos {
     int line, col;
     int fileid;
 
-    SourcePos() : line(1), col(1) {}
+    SourcePos() : line(1), col(1) {
+    }
 };
 
 enum TokenKind {
@@ -52,7 +53,9 @@ struct Token {
 
     std::string to_string() const;
 
-    void dbgprint() { std::cout << to_string() << "\n"; }
+    void dbgprint() {
+        std::cout << to_string() << "\n";
+    }
 };
 
 } // namespace swan

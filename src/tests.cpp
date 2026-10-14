@@ -18,8 +18,7 @@ using namespace swan;
         }                                                                      \
     }
 
-void scanner_tests()
-{
+void scanner_tests() {
 #define TOKENIZE(STR)                                                          \
     Scanner s(STR, 0, "<test-file>");                                          \
     std::vector<Token> vec;                                                    \
@@ -82,8 +81,7 @@ void scanner_tests()
     }
 }
 
-void parser_tests()
-{
+void parser_tests() {
     Arena ast_arena;
 #define PARSE(CODE)                                                            \
     Parser p(CODE, 0, "<test>", &ast_arena);                                   \
@@ -233,8 +231,7 @@ void parser_tests()
     F();                                                                       \
     std::cout << " passed\n";
 
-int main()
-{
+int main() {
     RUN(scanner_tests);
     RUN(parser_tests);
     std::cout << "All tests passed.\n";

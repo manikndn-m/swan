@@ -3,18 +3,15 @@
 
 namespace swan {
 
-fs::path Compiler::find_module_file(Path p)
-{
+fs::path Compiler::find_module_file(Path p) {
     return "";
 }
 
-Symbol Compiler::resolve_path(Path p)
-{
+Symbol Compiler::resolve_path(Path p) {
     return Symbol();
 }
 
-Type *Compiler::type_ann_to_type(TypeAnnot *typeann, Scope *scope)
-{
+Type *Compiler::type_ann_to_type(TypeAnnot *typeann, Scope *scope) {
     Type *type = new Type();
     switch (typeann->kind) {
     case ta_uint16:
@@ -72,8 +69,7 @@ Type *Compiler::type_ann_to_type(TypeAnnot *typeann, Scope *scope)
     return type;
 }
 
-StringRef Compiler::type_to_ctype(Type *type, Scope *scope)
-{
+StringRef Compiler::type_to_ctype(Type *type, Scope *scope) {
     switch (type->kind) {
     case tk_uint16:
         return "uint16_t";
@@ -98,8 +94,7 @@ StringRef Compiler::type_to_ctype(Type *type, Scope *scope)
     return "unreachable";
 }
 
-Type *Compiler::infer_type(AstNode *expr, Scope *scope)
-{
+Type *Compiler::infer_type(AstNode *expr, Scope *scope) {
     auto primty = [](TypeKind kind) {
         Type *type = new Type();
         type->kind = kind;
@@ -134,8 +129,7 @@ Type *Compiler::infer_type(AstNode *expr, Scope *scope)
     return nullptr;
 }
 
-void Compiler::emit_expr(AstNode *expr, Scope *scope)
-{
+void Compiler::emit_expr(AstNode *expr, Scope *scope) {
     switch (expr->kind) {
     case ak_intlit: {
         auto intexpr = expr->as<IntLitExpr>();
@@ -157,8 +151,7 @@ void Compiler::emit_expr(AstNode *expr, Scope *scope)
     }
 }
 
-void Compiler::add_symbol_from_stmt(AstNode *stmt, Scope *scope)
-{
+void Compiler::add_symbol_from_stmt(AstNode *stmt, Scope *scope) {
     switch (stmt->kind) {
     case ak_structdef: {
         auto sdstmt = stmt->as<StructDefStmt>();
@@ -206,8 +199,7 @@ void Compiler::add_symbol_from_stmt(AstNode *stmt, Scope *scope)
     }
 }
 
-void Compiler::emit_block(Block *block, bool surround_with_braces)
-{
+void Compiler::emit_block(Block *block, bool surround_with_braces) {
     if (surround_with_braces) {
         emit("{\n");
     }
@@ -221,8 +213,7 @@ void Compiler::emit_block(Block *block, bool surround_with_braces)
     }
 }
 
-void Compiler::emit_stmt(AstNode *stmt)
-{
+void Compiler::emit_stmt(AstNode *stmt) {
     add_symbol_from_stmt(stmt, curr_scope);
 
     switch (stmt->kind) {
@@ -269,8 +260,7 @@ void Compiler::emit_stmt(AstNode *stmt)
     emit(";\n\n");
 }
 
-void Compiler::compile(fs::path file_path, bool is_main_mod)
-{
+void Compiler::compile(fs::path file_path, bool is_main_mod) {
     fs::path filename_only = file_path.filename();
     fs::path filename_only_without_ext = filename_only;
     filename_only_without_ext.replace_extension();

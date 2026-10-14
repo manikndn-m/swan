@@ -5,8 +5,7 @@
 
 namespace swan {
 
-void Scanner::take_while(std::string &acc, std::function<bool(char)> pred)
-{
+void Scanner::take_while(std::string &acc, std::function<bool(char)> pred) {
     acc.clear();
     while (pred(*it)) {
         acc += *it;
@@ -17,8 +16,7 @@ void Scanner::take_while(std::string &acc, std::function<bool(char)> pred)
     }
 }
 
-void Scanner::next(Token &out)
-{
+void Scanner::next(Token &out) {
     auto is_keyword = [&](const std::string &s, TokenKind &out) {
         auto key_it = keywordmap.find(s);
         if (key_it == keywordmap.end()) {

@@ -26,21 +26,18 @@ class Compiler {
     StringRef module_prefix;
 
     template <typename T>
-    void emit(T t)
-    {
+    void emit(T t) {
         c_code << t;
     }
 
     template <typename T, typename U, typename... Args>
-    void emit(T t, U u, Args... args)
-    {
+    void emit(T t, U u, Args... args) {
         c_code << t;
         emit(u, args...);
     }
 
     template <typename T>
-    void err(T t)
-    {
+    void err(T t) {
         msg << t;
         ParserError e;
         e.msg = msg.str();
@@ -49,56 +46,48 @@ class Compiler {
     }
 
     template <typename T, typename U, typename... Args>
-    void err(T t, U u, Args... args)
-    {
+    void err(T t, U u, Args... args) {
         msg << t;
         err(u, args...);
     }
 
     template <typename T>
-    T *alloc()
-    {
+    T *alloc() {
         auto ptr = (T *)ast_arena.allocate(sizeof(T));
         new (ptr) T();
         return ptr;
     }
 
-    StringRef alloc_str(std::string str)
-    {
+    StringRef alloc_str(std::string str) {
         char *ptr = (char *)ast_arena.allocate(sizeof(char) * str.size());
         memcpy(ptr, str.data(), sizeof(char) * str.size());
         return StringRef(ptr, str.size());
     }
 
     template <typename T>
-    std::string strref_conc(std::string accum, T t)
-    {
+    std::string strref_conc(std::string accum, T t) {
         accum = accum + std::string(t);
         return accum;
     }
 
     template <typename T, typename U, typename... Args>
-    std::string strref_conc(std::string accum, T t, U u, Args... args)
-    {
+    std::string strref_conc(std::string accum, T t, U u, Args... args) {
         accum = accum + std::string(t);
         return strref_conc(accum, u, args...);
     }
 
     template <typename... Args>
-    std::string str_from_strrefs(Args... args)
-    {
+    std::string str_from_strrefs(Args... args) {
         return strref_conc("", args...);
     }
 
     template <typename... Args>
-    StringRef alloc_conc_strrefs(Args... args)
-    {
+    StringRef alloc_conc_strrefs(Args... args) {
         return alloc_str(str_from_strrefs(args...));
     }
 
   public:
-    Compiler(fs::path search_path)
-    {
+    Compiler(fs::path search_path) {
         this->search_path = search_path;
         this->toplevel_scope = new Scope(nullptr);
         this->curr_scope = this->toplevel_scope;

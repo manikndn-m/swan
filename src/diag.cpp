@@ -1,4 +1,3 @@
 #include "diag.h"
 
-namespace swan {
-}
+namespace swan {}
