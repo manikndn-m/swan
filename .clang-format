@@ -7,3 +7,5 @@ BreakBeforeBraces: Custom
 
 AllowShortFunctionsOnASingleLine: None
 
+BreakTemplateDeclarations: Yes
+

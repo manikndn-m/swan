@@ -18,14 +18,16 @@ class Parser {
     Token tok;
     Arena *ast_arena;
 
-    template <typename T> T *alloc()
+    template <typename T>
+    T *alloc()
     {
         auto ptr = (T *)ast_arena->allocate(sizeof(T));
         new (ptr) T();
         return ptr;
     }
 
-    template <typename T> Span<T> vec_to_span(const std::vector<T> &v)
+    template <typename T>
+    Span<T> vec_to_span(const std::vector<T> &v)
     {
         T *ptr = (T *)ast_arena->allocate(sizeof(T) * v.size());
         memcpy(ptr, v.data(), sizeof(T) * v.size());
@@ -47,7 +49,8 @@ class Parser {
         return sref;
     }
 
-    template <typename... Args> void err(std::string msg)
+    template <typename... Args>
+    void err(std::string msg)
     {
         ParserError e;
         e.msg = msg;

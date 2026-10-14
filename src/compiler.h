@@ -25,7 +25,8 @@ class Compiler {
     std::stringstream msg;
     StringRef module_prefix;
 
-    template <typename T> void emit(T t)
+    template <typename T>
+    void emit(T t)
     {
         c_code << t;
     }
@@ -37,11 +38,13 @@ class Compiler {
         emit(u, args...);
     }
 
-    template <typename T> void err(T t)
+    template <typename T>
+    void err(T t)
     {
         msg << t;
         ParserError e;
         e.msg = msg.str();
+        std::cout << msg.str() << std::endl;
         throw e;
     }
 
@@ -52,7 +55,8 @@ class Compiler {
         err(u, args...);
     }
 
-    template <typename T> T *alloc()
+    template <typename T>
+    T *alloc()
     {
         auto ptr = (T *)ast_arena.allocate(sizeof(T));
         new (ptr) T();
@@ -66,7 +70,8 @@ class Compiler {
         return StringRef(ptr, str.size());
     }
 
-    template <typename T> std::string strref_conc(std::string accum, T t)
+    template <typename T>
+    std::string strref_conc(std::string accum, T t)
     {
         accum = accum + std::string(t);
         return accum;
@@ -79,12 +84,14 @@ class Compiler {
         return strref_conc(accum, u, args...);
     }
 
-    template <typename... Args> std::string str_from_strrefs(Args... args)
+    template <typename... Args>
+    std::string str_from_strrefs(Args... args)
     {
         return strref_conc("", args...);
     }
 
-    template <typename... Args> StringRef alloc_conc_strrefs(Args... args)
+    template <typename... Args>
+    StringRef alloc_conc_strrefs(Args... args)
     {
         return alloc_str(str_from_strrefs(args...));
     }

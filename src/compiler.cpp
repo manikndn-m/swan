@@ -30,9 +30,11 @@ Type *Compiler::type_ann_to_type(TypeAnnot *typeann, Scope *scope)
     case ta_int16:
         type->kind = tk_int16;
         break;
+
     case ta_int32:
         type->kind = tk_int32;
         break;
+
     case ta_int64:
         type->kind = tk_int64;
         break;
@@ -109,6 +111,23 @@ Type *Compiler::infer_type(AstNode *expr, Scope *scope)
         auto intexpr = expr->as<IntLitExpr>();
         return primty(tk_int32);
     }
+    case ak_id: {
+        auto idexpr = expr->as<IdExpr>();
+        auto sym = scope->find(idexpr->id);
+        if (sym == std::nullopt) {
+            err("cannot find symbol ", idexpr->id);
+        }
+
+        if (std::holds_alternative<Var *>(*sym)) {
+            Var *var = std::get<Var *>(*sym);
+            return var->type;
+        } else if (std::holds_alternative<Struct *>(*sym) ||
+                   std::holds_alternative<Function *>(*sym)) {
+            err("cannot use a struct or function as an expression");
+        } else {
+            fixme();
+        }
+    }
     }
 
     fixme();
@@ -117,6 +136,25 @@ Type *Compiler::infer_type(AstNode *expr, Scope *scope)
 
 void Compiler::emit_expr(AstNode *expr, Scope *scope)
 {
+    switch (expr->kind) {
+    case ak_intlit: {
+        auto intexpr = expr->as<IntLitExpr>();
+        emit(intexpr->val);
+    } break;
+    case ak_id: {
+        auto idexpr = expr->as<IdExpr>();
+
+        auto sym = scope->find(idexpr->id);
+        if (sym == std::nullopt) {
+            err("cannot find symbol ", idexpr->id);
+        }
+
+        Var *var = std::get<Var *>(*sym);
+        emit(var->canon_name);
+    } break;
+    default:
+        fixme();
+    }
 }
 
 void Compiler::add_symbol_from_stmt(AstNode *stmt, Scope *scope)
@@ -137,6 +175,31 @@ void Compiler::add_symbol_from_stmt(AstNode *stmt, Scope *scope)
         struct_->struct_type->struct_ = struct_;
 
         scope->add(sdstmt->name, struct_);
+    } break;
+    case ak_vardefstmt: {
+        auto vdstmt = stmt->as<VarDefStmt>();
+
+        for (auto vardef : vdstmt->vardefs) {
+            Type *type = nullptr;
+
+            if (vardef.type_ann != nullptr) {
+                type = type_ann_to_type(vardef.type_ann, scope);
+            } else if (vardef.init != nullptr) {
+                type = infer_type(vardef.init, scope);
+            } else {
+                err("cannot infer type of variable ", vardef.id);
+            }
+
+            Var *var = new Var();
+            var->type = type;
+            if (scope == toplevel_scope) {
+                var->canon_name = alloc_conc_strrefs(module_prefix, vardef.id);
+            } else {
+                var->canon_name = vardef.id;
+            }
+
+            scope->add(vardef.id, var);
+        }
     } break;
     default:
         break;
@@ -165,6 +228,7 @@ void Compiler::emit_stmt(AstNode *stmt)
     switch (stmt->kind) {
     case ak_vardefstmt: {
         auto vdstmt = stmt->as<VarDefStmt>();
+
         for (auto vardef : vdstmt->vardefs) {
             Type *type = nullptr;
             if (vardef.type_ann != nullptr) {
@@ -179,6 +243,11 @@ void Compiler::emit_stmt(AstNode *stmt)
             }
 
             emit(type_to_ctype(type, curr_scope), " ", cvar_name);
+
+            if (vardef.init != nullptr) {
+                emit(" = ");
+                emit_expr(vardef.init, curr_scope);
+            }
         }
     } break;
     case ak_structdef: {
@@ -252,8 +321,7 @@ void Compiler::compile(fs::path file_path, bool is_main_mod)
     std::ofstream outc(output_cfile_path.string());
     outc << gencode;
 
-    //  For debugging, you can uncomment the following lines to format the
-    //  generated C code using clang-format.
+    //  For debugging...
     //  auto fmt_cmd = "clang-format -i " + output_cfile_path.string();
     //  system(fmt_cmd.c_str());
 }
