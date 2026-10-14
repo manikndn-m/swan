@@ -1,0 +1,22 @@
+K(tok_import, "import")
+K(tok_if, "if")
+K(tok_var, "var")
+K(tok_else, "else")
+K(tok_def, "def")
+K(tok_return, "return")
+K(tok_object, "object")
+K(tok_struct, "struct")
+K(tok_interface, "interface")
+K(tok_variant, "variant")
+K(tok_switch, "switch")
+
+K(tok_public, "public")
+K(tok_shared, "shared")
+
+K(tok_int16, "int16")
+K(tok_int32, "int32")
+K(tok_int64, "int64")
+
+K(tok_uint16, "uint16")
+K(tok_uint32, "uint32")
+K(tok_uint64, "uint64")

@@ -1,0 +1,9 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+
+BraceWrapping:
+  AfterFunction:   true
+BreakBeforeBraces: Custom
+
+AllowShortFunctionsOnASingleLine: None
+
