@@ -14,6 +14,8 @@ enum TypeAnnotKind {
     ta_int32,
     ta_int64,
 
+    ta_bool,
+
     ta_uint16,
     ta_uint32,
     ta_uint64,

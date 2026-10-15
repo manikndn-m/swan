@@ -43,6 +43,7 @@ Type *Compiler::type_ann_to_type(TypeAnnot *typeann, Scope *scope) {
         auto type = alloc<Type>();
         type->kind = tk_alias;
         type->of = type_ann_to_type(typeann->of, scope);
+        type->mutable_ = typeann->is_mut;
         return type;
     }
 
@@ -280,6 +281,10 @@ void Compiler::compile(fs::path file_path, bool is_main_mod) {
     module_prefix = alloc_str(filename_only_without_ext.string() + "_");
 
     std::ifstream file(file_path.string());
+    if (!file.is_open()) {
+        err("cannot open file ", file_path.string());
+    }
+
     std::stringstream buffer;
 
     buffer << file.rdbuf();

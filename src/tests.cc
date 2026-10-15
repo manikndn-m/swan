@@ -228,7 +228,7 @@ void parser_tests() {
 
     {
         // FIXME
-        PARSE("def foo(renderer: &re.Renderer, x: int) { \
+        PARSE("def foo(renderer: &mut re.Renderer, x: int) { \
                         var bar: int \n\
                         print() \
             }");
@@ -243,7 +243,8 @@ void parser_tests() {
         auto typeann = funcdefstmt->proto.sign.params[0].type_ann;
         EXPECT(typeann->kind == ta_alias &&
                typeann->of->unresolved.items[0] == "re" &&
-               typeann->of->unresolved.items[1] == "Renderer");
+               typeann->of->unresolved.items[1] == "Renderer" &&
+               typeann->is_mut == true);
 
         auto fblock = funcdefstmt->block;
         EXPECT(fblock->stmts.size() == 2);

@@ -338,6 +338,11 @@ TypeAnnot *Parser::parse_typeann() {
         next();
         break;
 
+    case tok_bool:
+        ann->kind = ta_int32; // FIXME: Use a proper bool type.
+        next();
+        break;
+
     case tok_shared:
         ann->kind = ta_shared;
         next();
