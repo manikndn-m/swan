@@ -7,6 +7,7 @@
 #include <fstream>
 #include <optional>
 #include <sstream>
+#include <stack>
 
 namespace swan {
 
@@ -18,6 +19,7 @@ struct CompilerError {
 class Compiler {
     fs::path search_path;
     Scope *toplevel_scope, *curr_scope;
+    std::stack<Scope *> scope_stack;
     Arena ast_arena;
     std::ofstream cfile;
     std::stringstream c_code;
@@ -91,7 +93,15 @@ class Compiler {
         this->search_path = search_path;
         this->toplevel_scope = new Scope(nullptr);
         this->curr_scope = this->toplevel_scope;
+        this->scope_stack.push(this->curr_scope);
         this->temp_id = 0;
+    }
+
+    ~Compiler() {
+        while (!this->scope_stack.empty()) {
+            delete this->scope_stack.top();
+            this->scope_stack.pop();
+        }
     }
 
     void compile(fs::path filepath, bool is_main_mod);

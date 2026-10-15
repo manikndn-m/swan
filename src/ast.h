@@ -33,6 +33,7 @@ enum Visibility {
 struct TypeAnnot {
     TypeAnnotKind kind;
     TypeAnnot *of;
+    bool is_mut; // Applies to ta_alias.
 
     Path unresolved;
 };
@@ -111,29 +112,6 @@ enum BinOp {
 #undef N
 #undef F
 #undef NEND
-
-struct ParamDef : AstNode {
-    StringRef name;
-    TypeAnnot *type_ann;
-
-    AST_NODE(ParamDef, ak_paramdef);
-};
-
-struct FunctionSignatureDef : AstNode {
-    Span<ParamDef> params;
-    TypeAnnot *return_type_ann;
-
-    AST_NODE(FunctionSignatureDef, ak_funcsig);
-};
-
-struct FunctionProtoDef : AstNode {
-    bool has_receiver;
-    TypeAnnot *receiver;
-    StringRef func_name;
-    FunctionSignatureDef sign;
-
-    AST_NODE(FunctionProtoDef, ak_funcproto);
-};
 
 struct Block;
 

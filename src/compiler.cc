@@ -12,41 +12,42 @@ Symbol Compiler::resolve_path(Path p) {
 }
 
 Type *Compiler::type_ann_to_type(TypeAnnot *typeann, Scope *scope) {
-    Type *type = new Type();
+    auto primty = [](TypeKind kind) {
+        static Type type;
+        type.kind = kind;
+        return &type;
+    };
+
     switch (typeann->kind) {
     case ta_uint16:
-        type->kind = tk_uint16;
-        break;
+        return primty(tk_uint16);
     case ta_uint32:
-        type->kind = tk_uint32;
-        break;
+        return primty(tk_uint32);
     case ta_uint64:
-        type->kind = tk_uint64;
-        break;
-
+        return primty(tk_uint64);
     case ta_int16:
-        type->kind = tk_int16;
-        break;
-
+        return primty(tk_int16);
     case ta_int32:
-        type->kind = tk_int32;
-        break;
-
+        return primty(tk_int32);
     case ta_int64:
-        type->kind = tk_int64;
-        break;
+        return primty(tk_int64);
 
-    case ta_shared:
+    case ta_shared: {
+        auto type = alloc<Type>();
         type->kind = tk_shared;
         type->of = type_ann_to_type(typeann->of, scope);
-        break;
+        return type;
+    }
 
-    case ta_alias:
+    case ta_alias: {
+        auto type = alloc<Type>();
         type->kind = tk_alias;
         type->of = type_ann_to_type(typeann->of, scope);
-        break;
+        return type;
+    }
 
-    case ta_unresolved:
+    case ta_unresolved: {
+        auto type = alloc<Type>();
         for (auto item : typeann->unresolved.items) {
             auto sym = scope->find(item);
             if (sym == std::nullopt) {
@@ -61,12 +62,14 @@ Type *Compiler::type_ann_to_type(TypeAnnot *typeann, Scope *scope) {
                 fixme(); // TODO: handle imported modules, interfaces etc.,
             }
         }
-        break;
-    default:
-        fixme();
     }
 
-    return type;
+    default:
+        break;
+    }
+
+    fixme();
+    return nullptr;
 }
 
 StringRef Compiler::type_to_ctype(Type *type, Scope *scope) {
@@ -87,6 +90,8 @@ StringRef Compiler::type_to_ctype(Type *type, Scope *scope) {
         return type->struct_->canon_name;
     case tk_alias:
         return alloc_conc_strrefs(type_to_ctype(type->of, scope), " *");
+    case tk_shared:
+        return alloc_conc_strrefs(type_to_ctype(type->of, scope), " *");
     default:
         fixme();
     }
@@ -104,6 +109,7 @@ Type *Compiler::infer_type(AstNode *expr, Scope *scope) {
     switch (expr->kind) {
     case ak_intlit: {
         auto intexpr = expr->as<IntLitExpr>();
+        (void)intexpr;
         return primty(tk_int32);
     }
     case ak_id: {
@@ -123,9 +129,9 @@ Type *Compiler::infer_type(AstNode *expr, Scope *scope) {
             fixme();
         }
     }
+    default:
+        fixme();
     }
-
-    fixme();
     return nullptr;
 }
 
@@ -163,7 +169,7 @@ void Compiler::add_symbol_from_stmt(AstNode *stmt, Scope *scope) {
         }
 
         struct_->canon_name = alloc_conc_strrefs(module_prefix, sdstmt->name);
-        struct_->struct_type = new Type();
+        struct_->struct_type = alloc<Type>();
         struct_->struct_type->kind = tk_struct;
         struct_->struct_type->struct_ = struct_;
 
@@ -224,6 +230,13 @@ void Compiler::emit_stmt(AstNode *stmt) {
             Type *type = nullptr;
             if (vardef.type_ann != nullptr) {
                 type = type_ann_to_type(vardef.type_ann, curr_scope);
+            } else if (vardef.init != nullptr) {
+                auto symbol = curr_scope->find(vardef.id);
+                if (symbol == std::nullopt ||
+                    !std::holds_alternative<Var *>(*symbol)) {
+                    err("cannot find variable ", vardef.id);
+                }
+                type = std::get<Var *>(*symbol)->type;
             }
 
             StringRef cvar_name;

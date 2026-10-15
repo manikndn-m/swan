@@ -62,3 +62,20 @@ NEND
 N(VarDefStmt, ak_vardefstmt)
 F(Span<VarDef>, vardefs)
 NEND
+
+N(ParamDef, ak_paramdef)
+F(TypeAnnot *, type_ann)
+F(StringRef, name)
+NEND
+
+N(FunctionSignatureDef, ak_funcsig)
+F(Span<ParamDef>, params)
+F(TypeAnnot *, return_type_ann)
+NEND
+
+N(FunctionProtoDef, ak_funcproto)
+F(bool, has_receiver)
+F(TypeAnnot *, receiver)
+F(StringRef, func_name)
+F(FunctionSignatureDef, sign)
+NEND

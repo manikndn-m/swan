@@ -12,6 +12,7 @@ K(tok_switch, "switch")
 
 K(tok_public, "public")
 K(tok_shared, "shared")
+K(tok_mut, "mut")
 
 K(tok_int16, "int16")
 K(tok_int32, "int32")

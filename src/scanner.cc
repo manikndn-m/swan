@@ -92,6 +92,20 @@ void Scanner::next(Token &out) {
         is_lb = true;
     }
 
+    if (!eof() && (*it == '/')) {
+        advance();
+        if (!eof() && *it == '/') {
+            while (!eof() && *it != '\n') {
+                advance();
+            }
+            pos.col = 1;
+            pos.line++;
+            is_lb = true;
+        } else {
+            err("unrecognized character '/' (ASCII code 47)");
+        }
+    }
+
     if (is_lb) {
         out.kind = tok_linebreak;
     } else if (std::isalpha(*it) || *it == '_') {
@@ -182,7 +196,6 @@ void Scanner::next(Token &out) {
         out.kind = TOK;                                                        \
         break;                                                                 \
     }
-
         switch (*it) {
         case '+':
             advance();
@@ -290,6 +303,7 @@ void Scanner::next(Token &out) {
             SCO(';', tok_semic)
             SCO('.', tok_dot)
             SCO(':', tok_colon)
+
         default:
             err(std::string("unrecognized character '") + *it +
                 "' (ASCII code " + std::to_string(int(*it)) + ")");

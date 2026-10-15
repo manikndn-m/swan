@@ -254,6 +254,8 @@ AstNode *Parser::parse_stmt() {
         expect(tok_id);
         for (;;) {
             VarDef var;
+            var.type_ann = nullptr;
+            var.init = nullptr;
             var.id = consume_id();
 
             if (tok.kind == tok_assign) {
@@ -271,8 +273,11 @@ AstNode *Parser::parse_stmt() {
             }
         }
 
-        expect_and_skip(tok_colon);
-        auto typeann = parse_typeann();
+        TypeAnnot *typeann = nullptr;
+        if (tok.kind == tok_colon) {
+            next(); // Skip the ':'
+            typeann = parse_typeann();
+        }
 
         for (auto &vardef : vardefs) {
             vardef.type_ann = typeann;
@@ -342,6 +347,10 @@ TypeAnnot *Parser::parse_typeann() {
     case tok_btand:
         ann->kind = ta_alias;
         next();
+        if (tok.kind == tok_mut) {
+            next(); // Skip the 'mut'
+            ann->is_mut = true;
+        }
         ann->of = parse_typeann();
         break;
 
@@ -360,6 +369,7 @@ TypeAnnot *Parser::parse_typeann() {
 Block *Parser::parse_block(TokenKind endtok) {
     Block *block = alloc<Block>();
     std::vector<AstNode *> stmts;
+
     while (tok.kind != endtok) {
         while (tok.kind == tok_linebreak) {
             next();

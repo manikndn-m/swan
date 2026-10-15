@@ -80,6 +80,7 @@ auto benchmark(F fn, int iterations) {
 } // namespace swan
 
 #define DP(X) std::cout << X << std::endl;
+
 #define DPE(X)                                                                 \
     std::cout << #X << " = " << X << std::endl;                                \
     std::exit(-1);

@@ -67,6 +67,23 @@ class Scope {
         this->outer = outer;
     }
 
+    ~Scope() {
+        for (auto &[name, sym] : symbols) {
+            std::visit(
+                [](auto &&arg) {
+                    using T = std::decay_t<decltype(arg)>;
+                    if constexpr (std::is_same_v<T, Struct *>) {
+                        delete arg;
+                    } else if constexpr (std::is_same_v<T, Function *>) {
+                        delete arg;
+                    } else if constexpr (std::is_same_v<T, Var *>) {
+                        delete arg;
+                    }
+                },
+                sym);
+        }
+    }
+
     void add(StringRef name, Symbol s) {
         symbols[name] = s;
     }
