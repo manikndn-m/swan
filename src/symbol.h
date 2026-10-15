@@ -1,17 +1,18 @@
 #pragma once
 
-#include "type.h"
 #include <cassert>
 #include <optional>
 #include <unordered_map>
 #include <variant>
+
+#include "type.h"
 
 namespace swan {
 
 class Scope;
 
 struct Field {
-    Type *type;
+    Type* type;
     StringRef name;
 };
 
@@ -20,27 +21,27 @@ struct Struct {
     bool is_object;
     std::unordered_map<StringRef, Field> fields;
 
-    Type *struct_type;
+    Type* struct_type;
 };
 
 struct Param {
     StringRef name;
-    Type *type;
+    Type* type;
 };
 
 struct Var {
-    Type *type;
+    Type* type;
     StringRef canon_name;
 };
 
 struct FunctionSignature {
     std::vector<Param> params;
-    Type *return_type;
+    Type* return_type;
 };
 
 struct FunctionProto {
     bool has_receiver;
-    Type *receiver;
+    Type* receiver;
     StringRef func_name;
     FunctionSignature sign;
 };
@@ -51,32 +52,32 @@ struct Function {
 };
 
 struct ImportedModule {
-    Scope *scope;
+    Scope* scope;
     Arena ast_arena;
-    Block *block;
+    Block* block;
 };
 
-using Symbol = std::variant<Struct *, Function *, Var *>;
+using Symbol = std::variant<Struct*, Function*, Var*>;
 
 class Scope {
-    Scope *outer;
+    Scope* outer;
     std::unordered_map<StringRef, Symbol> symbols;
 
-  public:
-    Scope(Scope *outer) {
+   public:
+    Scope(Scope* outer) {
         this->outer = outer;
     }
 
     ~Scope() {
-        for (auto &[name, sym] : symbols) {
+        for (auto& [name, sym] : symbols) {
             std::visit(
-                [](auto &&arg) {
+                [](auto&& arg) {
                     using T = std::decay_t<decltype(arg)>;
-                    if constexpr (std::is_same_v<T, Struct *>) {
+                    if constexpr (std::is_same_v<T, Struct*>) {
                         delete arg;
-                    } else if constexpr (std::is_same_v<T, Function *>) {
+                    } else if constexpr (std::is_same_v<T, Function*>) {
                         delete arg;
-                    } else if constexpr (std::is_same_v<T, Var *>) {
+                    } else if constexpr (std::is_same_v<T, Var*>) {
                         delete arg;
                     }
                 },
@@ -102,4 +103,4 @@ class Scope {
     }
 };
 
-} // namespace swan
+}  // namespace swan

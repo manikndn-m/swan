@@ -1,8 +1,9 @@
 #pragma once
 
-#include "token.h"
 #include <functional>
 #include <string>
+
+#include "token.h"
 
 namespace swan {
 
@@ -46,9 +47,9 @@ class Scanner {
         throw e;
     }
 
-    void take_while(std::string &acc, std::function<bool(char)> pred);
+    void take_while(std::string& acc, std::function<bool(char)> pred);
 
-  public:
+   public:
     Scanner(std::string program, int fileid, std::string filename) {
         this->program = program;
         this->filename = filename;
@@ -64,7 +65,7 @@ class Scanner {
         return pos;
     }
 
-    void next(Token &out);
+    void next(Token& out);
 };
 
-} // namespace swan
+}  // namespace swan

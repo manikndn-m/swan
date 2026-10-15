@@ -26,11 +26,11 @@ struct Struct;
 
 struct Type {
     TypeKind kind;
-    Struct *struct_; // Applies if 'kind' is tk_struct
-    int bits;        // Applies if 'kind' is one of Int, Uint and Float.
-    bool mutable_;   // Applies if 'kind' is alias.
+    Struct* struct_;  // Applies if 'kind' is tk_struct
+    int bits;         // Applies if 'kind' is one of Int, Uint and Float.
+    bool mutable_;    // Applies if 'kind' is alias.
 
-    Type *of; // Applies if 'kind' is one of Alias, Array.
+    Type* of;  // Applies if 'kind' is one of Alias, Array.
 };
 
-} // namespace swan
+}  // namespace swan

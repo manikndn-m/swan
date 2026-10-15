@@ -1,13 +1,14 @@
 #pragma once
 
-#include "ast.h"
-#include "parser.h"
-#include "symbol.h"
-#include "util.h"
 #include <fstream>
 #include <optional>
 #include <sstream>
 #include <stack>
+
+#include "ast.h"
+#include "parser.h"
+#include "symbol.h"
+#include "util.h"
 
 namespace swan {
 
@@ -19,7 +20,7 @@ struct CompilerError {
 class Compiler {
     fs::path search_path;
     Scope *toplevel_scope, *curr_scope;
-    std::stack<Scope *> scope_stack;
+    std::stack<Scope*> scope_stack;
     Arena ast_arena;
     std::ofstream cfile;
     std::stringstream c_code;
@@ -54,14 +55,14 @@ class Compiler {
     }
 
     template <typename T>
-    T *alloc() {
-        auto ptr = (T *)ast_arena.allocate(sizeof(T));
+    T* alloc() {
+        auto ptr = (T*)ast_arena.allocate(sizeof(T));
         new (ptr) T();
         return ptr;
     }
 
     StringRef alloc_str(std::string str) {
-        char *ptr = (char *)ast_arena.allocate(sizeof(char) * str.size());
+        char* ptr = (char*)ast_arena.allocate(sizeof(char) * str.size());
         memcpy(ptr, str.data(), sizeof(char) * str.size());
         return StringRef(ptr, str.size());
     }
@@ -88,7 +89,7 @@ class Compiler {
         return alloc_str(str_from_strrefs(args...));
     }
 
-  public:
+   public:
     Compiler(fs::path search_path) {
         this->search_path = search_path;
         this->toplevel_scope = new Scope(nullptr);
@@ -106,22 +107,22 @@ class Compiler {
 
     void compile(fs::path filepath, bool is_main_mod);
 
-  private:
+   private:
     fs::path find_module_file(Path p);
     Symbol resolve_path(Path p);
-    Type *type_ann_to_type(TypeAnnot *typeann, Scope *scope);
-    void add_symbol_from_stmt(AstNode *stmt, Scope *scope);
+    Type* type_ann_to_type(TypeAnnot* typeann, Scope* scope);
+    void add_symbol_from_stmt(AstNode* stmt, Scope* scope);
 
-    Type *infer_type(AstNode *expr, Scope *scope);
-    void emit_expr(AstNode *expr, Scope *scope);
-    StringRef type_to_ctype(Type *type, Scope *scope);
+    Type* infer_type(AstNode* expr, Scope* scope);
+    void emit_expr(AstNode* expr, Scope* scope);
+    StringRef type_to_ctype(Type* type, Scope* scope);
 
     struct Tmp {
         int id;
     };
 
-    void emit_block(Block *block, bool surround_with_braces);
-    void emit_stmt(AstNode *stmt);
+    void emit_block(Block* block, bool surround_with_braces);
+    void emit_stmt(AstNode* stmt);
 };
 
-} // namespace swan
+}  // namespace swan

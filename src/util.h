@@ -27,10 +27,10 @@ void panic(Args... args) {
     exit(-1);
 }
 
-#define fixme()                                                                \
-    {                                                                          \
-        panic("internal compiler error at ", __LINE__, " : ", __FILE__,        \
-              " : ");                                                          \
+#define fixme()                                                         \
+    {                                                                   \
+        panic("internal compiler error at ", __LINE__, " : ", __FILE__, \
+              " : ");                                                   \
     }
 
 using StringRef = std::string_view;
@@ -38,22 +38,22 @@ using Arena = std::pmr::monotonic_buffer_resource;
 
 template <typename T>
 class Span {
-    T *ptr;
+    T* ptr;
     size_t size_;
 
-  public:
+   public:
     Span() {
         this->ptr = nullptr;
     }
 
-    Span(T *ptr, size_t size) : ptr(ptr), size_(size) {
+    Span(T* ptr, size_t size) : ptr(ptr), size_(size) {
     }
 
-    T *begin() {
+    T* begin() {
         return ptr;
     }
 
-    T *end() {
+    T* end() {
         return ptr + size_;
     }
 
@@ -77,10 +77,10 @@ auto benchmark(F fn, int iterations) {
     return secs.count();
 }
 
-} // namespace swan
+}  // namespace swan
 
 #define DP(X) std::cout << X << std::endl;
 
-#define DPE(X)                                                                 \
-    std::cout << #X << " = " << X << std::endl;                                \
+#define DPE(X)                                  \
+    std::cout << #X << " = " << X << std::endl; \
     std::exit(-1);

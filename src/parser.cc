@@ -1,4 +1,5 @@
 #include "parser.h"
+
 #include "ast.h"
 #include "util.h"
 
@@ -12,7 +13,7 @@ Path Parser::parse_path() {
     while (tok.kind == tok_id) {
         items.push_back(consume_id());
         if (tok.kind == tok_dot) {
-            next(); // Skip the '.'
+            next();  // Skip the '.'
         }
     }
 
@@ -20,20 +21,20 @@ Path Parser::parse_path() {
     return p;
 }
 
-AstNode *Parser::parse_expr() {
+AstNode* Parser::parse_expr() {
     return parse_assign();
 }
 
 BinOp tok_to_binop(TokenKind k) {
     switch (k) {
-#define BO(X, Y)                                                               \
-    case Y:                                                                    \
+#define BO(X, Y) \
+    case Y:      \
         return X;
 #include "binops.inc"
 #undef BO
-    default:
-        DP("Here");
-        fixme();
+        default:
+            DP("Here");
+            fixme();
     }
 
     return BinOp(0);
@@ -43,19 +44,19 @@ bool tok_is_one_of(TokenKind k, std::vector<TokenKind> v) {
     return std::find(v.begin(), v.end(), k) != v.end();
 }
 
-#define OPFUNC(FN, NEXTFN, TOKS)                                               \
-    AstNode *Parser::FN() {                                                    \
-        auto result = NEXTFN();                                                \
-        while (tok_is_one_of(tok.kind, TOKS)) {                                \
-            auto left = result;                                                \
-            result = alloc<BinExpr>();                                         \
-            result->as<BinExpr>()->op = tok_to_binop(tok.kind);                \
-            result->as<BinExpr>()->left = left;                                \
-            next();                                                            \
-            result->as<BinExpr>()->right = NEXTFN();                           \
-        }                                                                      \
-                                                                               \
-        return result;                                                         \
+#define OPFUNC(FN, NEXTFN, TOKS)                                \
+    AstNode* Parser::FN() {                                     \
+        auto result = NEXTFN();                                 \
+        while (tok_is_one_of(tok.kind, TOKS)) {                 \
+            auto left = result;                                 \
+            result = alloc<BinExpr>();                          \
+            result->as<BinExpr>()->op = tok_to_binop(tok.kind); \
+            result->as<BinExpr>()->left = left;                 \
+            next();                                             \
+            result->as<BinExpr>()->right = NEXTFN();            \
+        }                                                       \
+                                                                \
+        return result;                                          \
     }
 
 OPFUNC(parse_assign, parse_or, {tok_assign})
@@ -77,8 +78,8 @@ OPFUNC(parse_addsub, parse_muldiv, addsub)
 std::vector<TokenKind> muldiv{tok_mul, tok_div};
 OPFUNC(parse_muldiv, parse_prefix, muldiv)
 
-AstNode *Parser::parse_prefix() {
-    UnaryExpr *expr = nullptr;
+AstNode* Parser::parse_prefix() {
+    UnaryExpr* expr = nullptr;
 
     if (tok.kind == tok_not || tok.kind == tok_plus || tok.kind == tok_minus) {
         expr = alloc<UnaryExpr>();
@@ -90,46 +91,45 @@ AstNode *Parser::parse_prefix() {
         expr->operand = parse_prefix();
     }
 
-    if (expr)
-        return expr;
+    if (expr) return expr;
 
     return parse_term();
 }
 
-AstNode *Parser::parse_term() {
-    AstNode *result = nullptr;
+AstNode* Parser::parse_term() {
+    AstNode* result = nullptr;
     switch (tok.kind) {
-    case tok_intlit: {
-        auto expr = alloc<IntLitExpr>();
-        expr->val = tok.ival;
-        next();
-        result = expr;
-        break;
-    }
-    case tok_id: {
-        auto expr = alloc<IdExpr>();
-        expr->id = alloc_str(tok.idval);
-        next();
-        result = expr;
-        break;
-    }
-    case tok_oparen: {
-        next(); // Skip the '('
-        result = parse_expr();
-        expect_and_skip(tok_cparen);
-        break;
-    }
-    default: {
-    }
+        case tok_intlit: {
+            auto expr = alloc<IntLitExpr>();
+            expr->val = tok.ival;
+            next();
+            result = expr;
+            break;
+        }
+        case tok_id: {
+            auto expr = alloc<IdExpr>();
+            expr->id = alloc_str(tok.idval);
+            next();
+            result = expr;
+            break;
+        }
+        case tok_oparen: {
+            next();  // Skip the '('
+            result = parse_expr();
+            expect_and_skip(tok_cparen);
+            break;
+        }
+        default: {
+        }
     }
 
     while (tok.kind == tok_dot || tok.kind == tok_oparen) {
         if (tok.kind == tok_dot) {
             while (tok.kind == tok_dot) {
-                BinExpr *expr = alloc<BinExpr>();
+                BinExpr* expr = alloc<BinExpr>();
                 expr->op = bo_dot;
                 expr->left = result;
-                next(); // Skip the dot.
+                next();  // Skip the dot.
                 expect(tok_id);
                 auto idnode = alloc<IdExpr>();
                 idnode->id = consume_id();
@@ -138,9 +138,9 @@ AstNode *Parser::parse_term() {
             }
         } else if (tok.kind == tok_oparen) {
             while (tok.kind == tok_oparen) {
-                next(); // Skip the '('
+                next();  // Skip the '('
 
-                std::vector<AstNode *> args;
+                std::vector<AstNode*> args;
                 auto funccall = alloc<FuncCallExpr>();
                 funccall->callee = result;
                 while (true) {
@@ -150,7 +150,7 @@ AstNode *Parser::parse_term() {
 
                     args.push_back(parse_expr());
                     if (tok.kind == tok_comma) {
-                        next(); // Skip the comma
+                        next();  // Skip the comma
                     }
                 }
 
@@ -190,7 +190,7 @@ FunctionSignatureDef Parser::parse_func_sign() {
     sign.params = vec_to_span(params);
 
     if (tok.kind == tok_colon) {
-        next(); // Skip the :
+        next();  // Skip the :
         sign.return_type_ann = parse_typeann();
     } else {
         sign.return_type_ann = nullptr;
@@ -216,89 +216,89 @@ FunctionProtoDef Parser::parse_func_proto() {
     return proto;
 }
 
-AstNode *Parser::parse_stmt() {
+AstNode* Parser::parse_stmt() {
     switch (tok.kind) {
-    case tok_import: {
-        next(); // Skip the 'import'
-        auto stmt = alloc<ImportStmt>();
-        stmt->path = parse_path();
-        return stmt;
-    }
-    case tok_struct:
-    case tok_object: {
-        auto stmt = alloc<StructDefStmt>();
-        stmt->is_object = tok.kind == tok_object;
-        next(); // Skip the 'struct' or 'object'
-        stmt->name = consume_id();
-        expect_and_skip(tok_obrace);
-        ignore_newlines();
-
-        std::vector<FieldDef> fields;
-        while (tok.kind != tok_cbrace) {
-            FieldDef field;
-            field.name = consume_id();
-            expect_and_skip(tok_colon);
-            field.type_ann = parse_typeann();
-            fields.push_back(field);
-            ignore_newlines();
+        case tok_import: {
+            next();  // Skip the 'import'
+            auto stmt = alloc<ImportStmt>();
+            stmt->path = parse_path();
+            return stmt;
         }
+        case tok_struct:
+        case tok_object: {
+            auto stmt = alloc<StructDefStmt>();
+            stmt->is_object = tok.kind == tok_object;
+            next();  // Skip the 'struct' or 'object'
+            stmt->name = consume_id();
+            expect_and_skip(tok_obrace);
+            ignore_newlines();
 
-        expect_and_skip(tok_cbrace);
-        ignore_newlines();
-        stmt->fields = vec_to_span(fields);
-        return stmt;
-    }
-    case tok_var: {
-        std::vector<VarDef> vardefs;
-        next(); // Skip the var.
-        expect(tok_id);
-        for (;;) {
-            VarDef var;
-            var.type_ann = nullptr;
-            var.init = nullptr;
-            var.id = consume_id();
+            std::vector<FieldDef> fields;
+            while (tok.kind != tok_cbrace) {
+                FieldDef field;
+                field.name = consume_id();
+                expect_and_skip(tok_colon);
+                field.type_ann = parse_typeann();
+                fields.push_back(field);
+                ignore_newlines();
+            }
+
+            expect_and_skip(tok_cbrace);
+            ignore_newlines();
+            stmt->fields = vec_to_span(fields);
+            return stmt;
+        }
+        case tok_var: {
+            std::vector<VarDef> vardefs;
+            next();  // Skip the var.
+            expect(tok_id);
+            for (;;) {
+                VarDef var;
+                var.type_ann = nullptr;
+                var.init = nullptr;
+                var.id = consume_id();
+
+                if (tok.kind == tok_assign) {
+                    next();  // Skip the '='
+                    var.init = parse_expr();
+                }
+
+                vardefs.push_back(var);
+                if (tok.kind == tok_comma) {
+                    next();
+                }
+
+                if (tok.kind != tok_id) {
+                    break;
+                }
+            }
+
+            TypeAnnot* typeann = nullptr;
+            if (tok.kind == tok_colon) {
+                next();  // Skip the ':'
+                typeann = parse_typeann();
+            }
+
+            for (auto& vardef : vardefs) {
+                vardef.type_ann = typeann;
+            }
 
             if (tok.kind == tok_assign) {
-                next(); // Skip the '='
-                var.init = parse_expr();
+                next();  // Skip the '='
+                vardefs[vardefs.size() - 1].init = parse_expr();
             }
 
-            vardefs.push_back(var);
-            if (tok.kind == tok_comma) {
-                next();
-            }
-
-            if (tok.kind != tok_id) {
-                break;
-            }
+            auto stmt = alloc<VarDefStmt>();
+            stmt->vardefs = vec_to_span(vardefs);
+            return stmt;
         }
-
-        TypeAnnot *typeann = nullptr;
-        if (tok.kind == tok_colon) {
-            next(); // Skip the ':'
-            typeann = parse_typeann();
-        }
-
-        for (auto &vardef : vardefs) {
-            vardef.type_ann = typeann;
-        }
-
-        if (tok.kind == tok_assign) {
-            next(); // Skip the '='
-            vardefs[vardefs.size() - 1].init = parse_expr();
-        }
-
-        auto stmt = alloc<VarDefStmt>();
-        stmt->vardefs = vec_to_span(vardefs);
-        return stmt;
-    }
-    case tok_def: {
-        next(); // Skip the def
-        auto stmt = alloc<FuncDefStmt>();
-        stmt->proto = parse_func_proto();
-        stmt->block = parse_brace_block();
-        return stmt;
-    } break;
+        case tok_def: {
+            next();  // Skip the def
+            auto stmt = alloc<FuncDefStmt>();
+            stmt->proto = parse_func_proto();
+            stmt->block = parse_brace_block();
+            return stmt;
+        } break;
     }
 
     // Parse an expression statement.
@@ -307,73 +307,73 @@ AstNode *Parser::parse_stmt() {
     return stmt;
 }
 
-TypeAnnot *Parser::parse_typeann() {
-    TypeAnnot *ann = alloc<TypeAnnot>();
+TypeAnnot* Parser::parse_typeann() {
+    TypeAnnot* ann = alloc<TypeAnnot>();
     switch (tok.kind) {
-    case tok_uint16:
-        ann->kind = ta_uint16;
-        next();
-        break;
-    case tok_uint32:
-        ann->kind = ta_uint32;
-        next();
-        break;
-    case tok_uint64:
-        ann->kind = ta_uint64;
-        next();
-        break;
+        case tok_uint16:
+            ann->kind = ta_uint16;
+            next();
+            break;
+        case tok_uint32:
+            ann->kind = ta_uint32;
+            next();
+            break;
+        case tok_uint64:
+            ann->kind = ta_uint64;
+            next();
+            break;
 
-    case tok_int16:
-        ann->kind = ta_int16;
-        next();
-        break;
+        case tok_int16:
+            ann->kind = ta_int16;
+            next();
+            break;
 
-    case tok_int32:
-        ann->kind = ta_int32;
-        next();
-        break;
+        case tok_int32:
+            ann->kind = ta_int32;
+            next();
+            break;
 
-    case tok_int64:
-        ann->kind = ta_int64;
-        next();
-        break;
+        case tok_int64:
+            ann->kind = ta_int64;
+            next();
+            break;
 
-    case tok_bool:
-        ann->kind = ta_int32; // FIXME: Use a proper bool type.
-        next();
-        break;
+        case tok_bool:
+            ann->kind = ta_int32;  // FIXME: Use a proper bool type.
+            next();
+            break;
 
-    case tok_shared:
-        ann->kind = ta_shared;
-        next();
-        ann->of = parse_typeann();
-        break;
+        case tok_shared:
+            ann->kind = ta_shared;
+            next();
+            ann->of = parse_typeann();
+            break;
 
-    case tok_btand:
-        ann->kind = ta_alias;
-        next();
-        if (tok.kind == tok_mut) {
-            next(); // Skip the 'mut'
-            ann->is_mut = true;
-        }
-        ann->of = parse_typeann();
-        break;
+        case tok_btand:
+            ann->kind = ta_alias;
+            next();
+            if (tok.kind == tok_mut) {
+                next();  // Skip the 'mut'
+                ann->is_mut = true;
+            }
+            ann->of = parse_typeann();
+            break;
 
-    case tok_id:
-        ann->kind = ta_unresolved;
-        ann->unresolved = parse_path();
-        break;
+        case tok_id:
+            ann->kind = ta_unresolved;
+            ann->unresolved = parse_path();
+            break;
 
-    default:
-        fixme();
+        default:
+            fixme();
     }
 
     return ann;
 }
 
-Block *Parser::parse_block(TokenKind endtok) {
-    Block *block = alloc<Block>();
-    std::vector<AstNode *> stmts;
+Block* Parser::parse_block(TokenKind endtok) {
+    Block* block = alloc<Block>();
+    std::vector<AstNode*> stmts;
 
     while (tok.kind != endtok) {
         while (tok.kind == tok_linebreak) {
@@ -397,10 +397,10 @@ Block *Parser::parse_block(TokenKind endtok) {
     return block;
 }
 
-Block *Parser::parse() {
+Block* Parser::parse() {
     // Read the first token into 'tok'.
     next();
     return parse_block(tok_eof);
 }
 
-} // namespace swan
+}  // namespace swan

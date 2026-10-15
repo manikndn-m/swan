@@ -58,4 +58,4 @@ struct Token {
     }
 };
 
-} // namespace swan
+}  // namespace swan

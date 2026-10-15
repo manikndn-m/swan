@@ -1,11 +1,12 @@
 // Author: Manikandan M.
 //
-#include "compiler.h"
 #include <iostream>
+
+#include "compiler.h"
 
 using namespace swan;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     if (argc != 2) {
         std::cout << "Usage: swanc [filename]\n";
         return -1;

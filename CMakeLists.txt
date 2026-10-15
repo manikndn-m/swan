@@ -6,9 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 if(MSVC)
-    # MSVC equivalent flags
     add_compile_options(/fsanitize=address /Zi /Od /W4)
-    # MSVC ASan requires incremental linking to be disabled
     add_link_options(/INCREMENTAL:NO)
 else()
     # GCC/Clang flags

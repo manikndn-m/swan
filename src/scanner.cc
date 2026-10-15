@@ -1,11 +1,12 @@
 #include "scanner.h"
+
 #include <cassert>
 #include <functional>
 #include <unordered_map>
 
 namespace swan {
 
-void Scanner::take_while(std::string &acc, std::function<bool(char)> pred) {
+void Scanner::take_while(std::string& acc, std::function<bool(char)> pred) {
     acc.clear();
     while (pred(*it)) {
         acc += *it;
@@ -16,8 +17,8 @@ void Scanner::take_while(std::string &acc, std::function<bool(char)> pred) {
     }
 }
 
-void Scanner::next(Token &out) {
-    auto is_keyword = [&](const std::string &s, TokenKind &out) {
+void Scanner::next(Token& out) {
+    auto is_keyword = [&](const std::string& s, TokenKind& out) {
         auto key_it = keywordmap.find(s);
         if (key_it == keywordmap.end()) {
             return false;
@@ -36,20 +37,20 @@ void Scanner::next(Token &out) {
         }
 
         switch (*it) {
-        case 'r':
-            advance();
-            return '\r';
-        case 'n':
-            advance();
-            return '\n';
-        case 't':
-            advance();
-            return '\t';
-        case 'b':
-            advance();
-            return '\b';
-        default:
-            err("unrecognized escape sequence");
+            case 'r':
+                advance();
+                return '\r';
+            case 'n':
+                advance();
+                return '\n';
+            case 't':
+                advance();
+                return '\t';
+            case 'b':
+                advance();
+                return '\b';
+            default:
+                err("unrecognized escape sequence");
         }
 
         return char(0);
@@ -140,7 +141,7 @@ void Scanner::next(Token &out) {
         }
     } else if (*it == '"') {
         accum.clear();
-        advance(); // Skip the '"'
+        advance();  // Skip the '"'
         while (*it != '"') {
             if (*it == '\r' || *it == '\n') {
                 pos.line++;
@@ -160,7 +161,7 @@ void Scanner::next(Token &out) {
                 break;
             }
         }
-        advance(); // Skip the '"'
+        advance();  // Skip the '"'
         out.kind = tok_strlit;
         out.strval = accum;
     } else if (*it == '\'') {
@@ -187,130 +188,129 @@ void Scanner::next(Token &out) {
         out.kind = tok_charlit;
         out.charval = ch;
     } else {
-
 // Macro SCO handles single character operator/delimiter.
-#define SCO(C, TOK)                                                            \
-    {                                                                          \
-    case C:                                                                    \
-        advance();                                                             \
-        out.kind = TOK;                                                        \
-        break;                                                                 \
+#define SCO(C, TOK)         \
+    {                       \
+        case C:             \
+            advance();      \
+            out.kind = TOK; \
+            break;          \
     }
         switch (*it) {
-        case '+':
-            advance();
-            if (!eof() && *it == '+') {
+            case '+':
                 advance();
-                out.kind = tok_inc;
+                if (!eof() && *it == '+') {
+                    advance();
+                    out.kind = tok_inc;
+                    break;
+                } else if (!eof() && *it == '=') {
+                    advance();
+                    out.kind = tok_pluseq;
+                    break;
+                }
+                out.kind = tok_plus;
                 break;
-            } else if (!eof() && *it == '=') {
+            case '-':
                 advance();
-                out.kind = tok_pluseq;
+                if (!eof() && *it == '-') {
+                    advance();
+                    out.kind = tok_dec;
+                    break;
+                } else if (!eof() && *it == '=') {
+                    advance();
+                    out.kind = tok_minuseq;
+                    break;
+                }
+                out.kind = tok_plus;
                 break;
-            }
-            out.kind = tok_plus;
-            break;
-        case '-':
-            advance();
-            if (!eof() && *it == '-') {
-                advance();
-                out.kind = tok_dec;
-                break;
-            } else if (!eof() && *it == '=') {
-                advance();
-                out.kind = tok_minuseq;
-                break;
-            }
-            out.kind = tok_plus;
-            break;
 
-        case '>':
-            advance();
-            if (!eof() && *it == '=') {
+            case '>':
                 advance();
-                out.kind = tok_gteq;
+                if (!eof() && *it == '=') {
+                    advance();
+                    out.kind = tok_gteq;
+                    break;
+                } else if (!eof() && *it == '>') {
+                    advance();
+                    out.kind = tok_rshift;
+                    break;
+                }
+                out.kind = tok_gt;
                 break;
-            } else if (!eof() && *it == '>') {
-                advance();
-                out.kind = tok_rshift;
-                break;
-            }
-            out.kind = tok_gt;
-            break;
 
-        case '<':
-            advance();
-            if (!eof() && *it == '=') {
+            case '<':
                 advance();
-                out.kind = tok_lteq;
+                if (!eof() && *it == '=') {
+                    advance();
+                    out.kind = tok_lteq;
+                    break;
+                } else if (!eof() && *it == '<') {
+                    advance();
+                    out.kind = tok_lshift;
+                    break;
+                }
+                out.kind = tok_lt;
                 break;
-            } else if (!eof() && *it == '<') {
+
+            case '&':
                 advance();
-                out.kind = tok_lshift;
+                if (!eof() && *it == '&') {
+                    advance();
+                    out.kind = tok_and;
+                    break;
+                }
+                out.kind = tok_btand;
                 break;
-            }
-            out.kind = tok_lt;
-            break;
 
-        case '&':
-            advance();
-            if (!eof() && *it == '&') {
+            case '|':
                 advance();
-                out.kind = tok_and;
+                if (!eof() && *it == '|') {
+                    advance();
+                    out.kind = tok_or;
+                    break;
+                }
+                out.kind = tok_btor;
                 break;
-            }
-            out.kind = tok_btand;
-            break;
 
-        case '|':
-            advance();
-            if (!eof() && *it == '|') {
+            case '!':
                 advance();
-                out.kind = tok_or;
+                if (!eof() && *it == '=') {
+                    advance();
+                    out.kind = tok_nequals;
+                    break;
+                }
+                out.kind = tok_not;
                 break;
-            }
-            out.kind = tok_btor;
-            break;
 
-        case '!':
-            advance();
-            if (!eof() && *it == '=') {
+            case '=':
                 advance();
-                out.kind = tok_nequals;
+                if (!eof() && *it == '=') {
+                    advance();
+                    out.kind = tok_equals;
+                    break;
+                }
+                out.kind = tok_assign;
                 break;
-            }
-            out.kind = tok_not;
-            break;
 
-        case '=':
-            advance();
-            if (!eof() && *it == '=') {
-                advance();
-                out.kind = tok_equals;
-                break;
-            }
-            out.kind = tok_assign;
-            break;
+                SCO('*', tok_mul)
+                SCO('/', tok_div)
+                SCO('^', tok_btxor)
+                SCO('(', tok_oparen)
+                SCO(')', tok_cparen)
+                SCO(',', tok_comma)
+                SCO('{', tok_obrace)
+                SCO('}', tok_cbrace)
+                SCO(';', tok_semic)
+                SCO('.', tok_dot)
+                SCO(':', tok_colon)
 
-            SCO('*', tok_mul)
-            SCO('/', tok_div)
-            SCO('^', tok_btxor)
-            SCO('(', tok_oparen)
-            SCO(')', tok_cparen)
-            SCO(',', tok_comma)
-            SCO('{', tok_obrace)
-            SCO('}', tok_cbrace)
-            SCO(';', tok_semic)
-            SCO('.', tok_dot)
-            SCO(':', tok_colon)
-
-        default:
-            err(std::string("unrecognized character '") + *it +
-                "' (ASCII code " + std::to_string(int(*it)) + ")");
+            default:
+                err(std::string("unrecognized character '") + *it +
+                    "' (ASCII code " + std::to_string(int(*it)) + ")");
         }
     }
 
     out.end_pos = pos;
-} // namespace swan
+}  // namespace swan
 
-} // namespace swan
+}  // namespace swan

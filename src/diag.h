@@ -17,4 +17,4 @@ void warning(SourcePos pos, Args... args) {
     print("\n");
 }
 
-} // namespace swan
+}  // namespace swan
