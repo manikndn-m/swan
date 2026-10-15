@@ -75,6 +75,7 @@ NEND
 
 N(FunctionProtoDef, ak_funcproto)
 F(bool, has_receiver)
+F(bool, is_good)
 F(TypeAnnot *, receiver)
 F(StringRef, func_name)
 F(FunctionSignatureDef, sign)
