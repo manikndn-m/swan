@@ -21,7 +21,7 @@ class Compiler {
     fs::path search_path;
     Scope *toplevel_scope, *curr_scope;
     std::stack<Scope*> scope_stack;
-    Arena ast_arena;
+    Arena arena;
     std::ofstream cfile;
     std::stringstream c_code;
     int temp_id;
@@ -55,19 +55,6 @@ class Compiler {
     }
 
     template <typename T>
-    T* alloc() {
-        auto ptr = (T*)ast_arena.allocate(sizeof(T));
-        new (ptr) T();
-        return ptr;
-    }
-
-    StringRef alloc_str(std::string str) {
-        char* ptr = (char*)ast_arena.allocate(sizeof(char) * str.size());
-        memcpy(ptr, str.data(), sizeof(char) * str.size());
-        return StringRef(ptr, str.size());
-    }
-
-    template <typename T>
     std::string strref_conc(std::string accum, T t) {
         accum = accum + std::string(t);
         return accum;
@@ -86,7 +73,7 @@ class Compiler {
 
     template <typename... Args>
     StringRef alloc_conc_strrefs(Args... args) {
-        return alloc_str(str_from_strrefs(args...));
+        return arena.alloc_str(str_from_strrefs(args...));
     }
 
    public:

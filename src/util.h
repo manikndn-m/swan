@@ -24,17 +24,21 @@ void print(T t, U u, Args... args) {
 template <typename... Args>
 void panic(Args... args) {
     print("\npanic: ", args...);
-    exit(-1);
+}
+
+[[noreturn]]
+inline void fixme_() {
+    std::abort();
 }
 
 #define fixme()                                                         \
     {                                                                   \
         panic("internal compiler error at ", __LINE__, " : ", __FILE__, \
               " : ");                                                   \
+        fixme_();                                                       \
     }
 
 using StringRef = std::string_view;
-using Arena = std::pmr::monotonic_buffer_resource;
 
 template <typename T>
 class Span {

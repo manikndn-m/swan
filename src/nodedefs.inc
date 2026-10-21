@@ -1,7 +1,7 @@
 
 N(BinExpr, ak_binexpr)
-F(AstNode *, left)
-F(AstNode *, right)
+F(AstNode*, left)
+F(AstNode*, right)
 F(BinOp, op)
 NEND
 
@@ -45,7 +45,7 @@ NEND
 
 N(StructDefStmt, ak_structdef)
 F(StringRef, name)
-F(Span<FieldDef>, fields)
+F(Span<FieldDef *>, fields)
 F(bool, is_object)
 NEND
 
@@ -60,7 +60,7 @@ F(AstNode *, init)
 NEND
 
 N(VarDefStmt, ak_vardefstmt)
-F(Span<VarDef>, vardefs)
+F(Span<VarDef *>, vardefs)
 NEND
 
 N(ParamDef, ak_paramdef)
@@ -69,7 +69,7 @@ F(StringRef, name)
 NEND
 
 N(FunctionSignatureDef, ak_funcsig)
-F(Span<ParamDef>, params)
+F(Span<ParamDef*>, params)
 F(TypeAnnot *, return_type_ann)
 NEND
 

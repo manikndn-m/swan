@@ -20,6 +20,8 @@ Type* Compiler::type_ann_to_type(TypeAnnot* typeann, Scope* scope) {
     };
 
     switch (typeann->kind) {
+        case ta_bool:
+            return primty(tk_bool);
         case ta_uint16:
             return primty(tk_uint16);
         case ta_uint32:
@@ -34,14 +36,14 @@ Type* Compiler::type_ann_to_type(TypeAnnot* typeann, Scope* scope) {
             return primty(tk_int64);
 
         case ta_shared: {
-            auto type = alloc<Type>();
+            auto type = arena.alloc<Type>();
             type->kind = tk_shared;
             type->of = type_ann_to_type(typeann->of, scope);
             return type;
         }
 
         case ta_alias: {
-            auto type = alloc<Type>();
+            auto type = arena.alloc<Type>();
             type->kind = tk_alias;
             type->of = type_ann_to_type(typeann->of, scope);
             type->mutable_ = typeann->is_mut;
@@ -49,7 +51,7 @@ Type* Compiler::type_ann_to_type(TypeAnnot* typeann, Scope* scope) {
         }
 
         case ta_unresolved: {
-            auto type = alloc<Type>();
+            auto type = arena.alloc<Type>();
             for (auto item : typeann->unresolved.items) {
                 auto sym = scope->find(item);
                 if (sym == std::nullopt) {
@@ -64,6 +66,7 @@ Type* Compiler::type_ann_to_type(TypeAnnot* typeann, Scope* scope) {
                     fixme();  // TODO: handle imported modules, interfaces etc.,
                 }
             }
+            return type;
         }
 
         default:
@@ -115,6 +118,7 @@ Type* Compiler::infer_type(AstNode* expr, Scope* scope) {
             return primty(tk_int32);
         }
         case ak_id: {
+            Type* type = nullptr;
             auto idexpr = expr->as<IdExpr>();
             auto sym = scope->find(idexpr->id);
             if (sym == std::nullopt) {
@@ -123,18 +127,22 @@ Type* Compiler::infer_type(AstNode* expr, Scope* scope) {
 
             if (std::holds_alternative<Var*>(*sym)) {
                 Var* var = std::get<Var*>(*sym);
-                return var->type;
+                type = var->type;
             } else if (std::holds_alternative<Struct*>(*sym) ||
                        std::holds_alternative<Function*>(*sym)) {
                 err("cannot use a struct or function as an expression");
             } else {
                 fixme();
             }
+
+            return type;
         }
+
         default:
-            fixme();
+            break;
     }
-    return nullptr;
+
+    fixme();
 }
 
 void Compiler::emit_expr(AstNode* expr, Scope* scope) {
@@ -166,13 +174,13 @@ void Compiler::add_symbol_from_stmt(AstNode* stmt, Scope* scope) {
             Struct* struct_ = new Struct();
             for (auto fielddef : sdstmt->fields) {
                 Field f;
-                f.name = fielddef.name;
-                f.type = type_ann_to_type(fielddef.type_ann, scope);
+                f.name = fielddef->name;
+                f.type = type_ann_to_type(fielddef->type_ann, scope);
             }
 
             struct_->canon_name =
                 alloc_conc_strrefs(module_prefix, sdstmt->name);
-            struct_->struct_type = alloc<Type>();
+            struct_->struct_type = arena.alloc<Type>();
             struct_->struct_type->kind = tk_struct;
             struct_->struct_type->struct_ = struct_;
 
@@ -184,24 +192,24 @@ void Compiler::add_symbol_from_stmt(AstNode* stmt, Scope* scope) {
             for (auto vardef : vdstmt->vardefs) {
                 Type* type = nullptr;
 
-                if (vardef.type_ann != nullptr) {
-                    type = type_ann_to_type(vardef.type_ann, scope);
-                } else if (vardef.init != nullptr) {
-                    type = infer_type(vardef.init, scope);
+                if (vardef->type_ann != nullptr) {
+                    type = type_ann_to_type(vardef->type_ann, scope);
+                } else if (vardef->init != nullptr) {
+                    type = infer_type(vardef->init, scope);
                 } else {
-                    err("cannot infer type of variable ", vardef.id);
+                    err("cannot infer type of variable ", vardef->id);
                 }
 
                 Var* var = new Var();
                 var->type = type;
                 if (scope == toplevel_scope) {
                     var->canon_name =
-                        alloc_conc_strrefs(module_prefix, vardef.id);
+                        alloc_conc_strrefs(module_prefix, vardef->id);
                 } else {
-                    var->canon_name = vardef.id;
+                    var->canon_name = vardef->id;
                 }
 
-                scope->add(vardef.id, var);
+                scope->add(vardef->id, var);
             }
         } break;
         default:
@@ -232,29 +240,29 @@ void Compiler::emit_stmt(AstNode* stmt) {
 
             for (auto vardef : vdstmt->vardefs) {
                 Type* type = nullptr;
-                if (vardef.type_ann != nullptr) {
-                    type = type_ann_to_type(vardef.type_ann, curr_scope);
-                } else if (vardef.init != nullptr) {
-                    auto symbol = curr_scope->find(vardef.id);
+                if (vardef->type_ann != nullptr) {
+                    type = type_ann_to_type(vardef->type_ann, curr_scope);
+                } else if (vardef->init != nullptr) {
+                    auto symbol = curr_scope->find(vardef->id);
                     if (symbol == std::nullopt ||
                         !std::holds_alternative<Var*>(*symbol)) {
-                        err("cannot find variable ", vardef.id);
+                        err("cannot find variable ", vardef->id);
                     }
                     type = std::get<Var*>(*symbol)->type;
                 }
 
                 StringRef cvar_name;
                 if (curr_scope == toplevel_scope) {
-                    cvar_name = alloc_conc_strrefs(module_prefix, vardef.id);
+                    cvar_name = alloc_conc_strrefs(module_prefix, vardef->id);
                 } else {
-                    cvar_name = vardef.id;
+                    cvar_name = vardef->id;
                 }
 
                 emit(type_to_ctype(type, curr_scope), " ", cvar_name);
 
-                if (vardef.init != nullptr) {
+                if (vardef->init != nullptr) {
                     emit(" = ");
-                    emit_expr(vardef.init, curr_scope);
+                    emit_expr(vardef->init, curr_scope);
                 }
             }
         } break;
@@ -264,8 +272,8 @@ void Compiler::emit_stmt(AstNode* stmt) {
                  " {\n");
 
             for (auto fielddef : sdstmt->fields) {
-                auto type = type_ann_to_type(fielddef.type_ann, curr_scope);
-                emit(type_to_ctype(type, curr_scope), " ", fielddef.name,
+                auto type = type_ann_to_type(fielddef->type_ann, curr_scope);
+                emit(type_to_ctype(type, curr_scope), " ", fielddef->name,
                      ";\n");
             }
 
@@ -282,7 +290,7 @@ void Compiler::compile(fs::path file_path, bool is_main_mod) {
     fs::path filename_only = file_path.filename();
     fs::path filename_only_without_ext = filename_only;
     filename_only_without_ext.replace_extension();
-    module_prefix = alloc_str(filename_only_without_ext.string() + "_");
+    module_prefix = arena.alloc_str(filename_only_without_ext.string() + "_");
 
     std::ifstream file(file_path.string());
     if (!file.is_open()) {
@@ -300,7 +308,7 @@ void Compiler::compile(fs::path file_path, bool is_main_mod) {
 
     Block* toplevel_block = nullptr;
     try {
-        Parser parser(program, 0, file_path.string(), &ast_arena);
+        Parser parser(program, 0, file_path.string(), arena);
         toplevel_block = parser.parse();
     } catch (ParserError pe) {
         std::cout << pe.msg << std::endl;

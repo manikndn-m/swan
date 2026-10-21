@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "arena.h"
 #include "ast.h"
 #include "scanner.h"
 #include "util.h"
@@ -17,31 +18,11 @@ struct ParserError {
 class Parser {
     Scanner s;
     Token tok;
-    Arena* ast_arena;
-
-    template <typename T>
-    T* alloc() {
-        auto ptr = (T*)ast_arena->allocate(sizeof(T));
-        new (ptr) T();
-        return ptr;
-    }
-
-    template <typename T>
-    Span<T> vec_to_span(const std::vector<T>& v) {
-        T* ptr = (T*)ast_arena->allocate(sizeof(T) * v.size());
-        memcpy(ptr, v.data(), sizeof(T) * v.size());
-        return Span<T>(ptr, v.size());
-    }
-
-    StringRef alloc_str(std::string str) {
-        char* ptr = (char*)ast_arena->allocate(sizeof(char) * str.size());
-        memcpy(ptr, str.data(), sizeof(char) * str.size());
-        return StringRef(ptr, str.size());
-    }
+    Arena& arena;
 
     StringRef consume_id() {
         expect(tok_id);
-        StringRef sref = alloc_str(tok.idval);
+        StringRef sref = arena.alloc_str(tok.idval);
         next();  // Skip the identifier
         return sref;
     }
@@ -84,9 +65,8 @@ class Parser {
 
    public:
     Parser(std::string program, int fileid, std::string filename,
-           Arena* ast_arena)
-        : s(program, fileid, filename) {
-        this->ast_arena = ast_arena;
+           Arena& ast_arena)
+        : s(program, fileid, filename), arena(ast_arena) {
     }
 
     Block* parse();

@@ -9,7 +9,7 @@ if(MSVC)
     add_link_options(/INCREMENTAL:NO)
 else()
     # GCC/Clang flags
-    add_compile_options(-fsanitize=address -g -O0 -Wall -D_GLIBCXX_ASSERTIONS)
+    add_compile_options(-fsanitize=address -g -O0 -Wall -Wimplicit-fallthrough -D_GLIBCXX_ASSERTIONS)
     add_link_options(-fsanitize=address)
 endif()
 
@@ -23,7 +23,8 @@ set(SOURCES src/token.cc
             src/type.cc
             src/compiler.cc
             src/util.cc
-            src/ast.cc)
+            src/ast.cc
+            src/arena.cc)
 
 add_library(swan ${SOURCES})
 

@@ -1,10 +1,13 @@
 #pragma once
 
 #include <cassert>
+#include <memory>
 #include <optional>
+#include <string>
 #include <unordered_map>
 #include <variant>
 
+#include "arena.h"
 #include "type.h"
 
 namespace swan {
@@ -53,7 +56,7 @@ struct Function {
 
 struct ImportedModule {
     Scope* scope;
-    Arena ast_arena;
+    Arena arena;
     Block* block;
 };
 

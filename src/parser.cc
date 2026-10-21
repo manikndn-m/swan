@@ -8,7 +8,7 @@ namespace swan {
 Path Parser::parse_path() {
     expect(tok_id);
 
-    Path p;
+    Path path;
     std::vector<StringRef> items;
     while (tok.kind == tok_id) {
         items.push_back(consume_id());
@@ -17,8 +17,8 @@ Path Parser::parse_path() {
         }
     }
 
-    p.items = vec_to_span(items);
-    return p;
+    path.items = arena.vec_to_span(items);
+    return path;
 }
 
 AstNode* Parser::parse_expr() {
@@ -49,7 +49,7 @@ bool tok_is_one_of(TokenKind k, std::vector<TokenKind> v) {
         auto result = NEXTFN();                                 \
         while (tok_is_one_of(tok.kind, TOKS)) {                 \
             auto left = result;                                 \
-            result = alloc<BinExpr>();                          \
+            result = arena.alloc<BinExpr>();                    \
             result->as<BinExpr>()->op = tok_to_binop(tok.kind); \
             result->as<BinExpr>()->left = left;                 \
             next();                                             \
@@ -82,7 +82,7 @@ AstNode* Parser::parse_prefix() {
     UnaryExpr* expr = nullptr;
 
     if (tok.kind == tok_not || tok.kind == tok_plus || tok.kind == tok_minus) {
-        expr = alloc<UnaryExpr>();
+        expr = arena.alloc<UnaryExpr>();
     }
 
     while (tok.kind == tok_not || tok.kind == tok_plus ||
@@ -100,15 +100,15 @@ AstNode* Parser::parse_term() {
     AstNode* result = nullptr;
     switch (tok.kind) {
         case tok_intlit: {
-            auto expr = alloc<IntLitExpr>();
+            auto expr = arena.alloc<IntLitExpr>();
             expr->val = tok.ival;
             next();
             result = expr;
             break;
         }
         case tok_id: {
-            auto expr = alloc<IdExpr>();
-            expr->id = alloc_str(tok.idval);
+            auto expr = arena.alloc<IdExpr>();
+            expr->id = arena.alloc_str(tok.idval);
             next();
             result = expr;
             break;
@@ -126,12 +126,12 @@ AstNode* Parser::parse_term() {
     while (tok.kind == tok_dot || tok.kind == tok_oparen) {
         if (tok.kind == tok_dot) {
             while (tok.kind == tok_dot) {
-                BinExpr* expr = alloc<BinExpr>();
+                BinExpr* expr = arena.alloc<BinExpr>();
                 expr->op = bo_dot;
                 expr->left = result;
                 next();  // Skip the dot.
                 expect(tok_id);
-                auto idnode = alloc<IdExpr>();
+                auto idnode = arena.alloc<IdExpr>();
                 idnode->id = consume_id();
                 expr->right = idnode;
                 result = expr;
@@ -141,7 +141,7 @@ AstNode* Parser::parse_term() {
                 next();  // Skip the '('
 
                 std::vector<AstNode*> args;
-                auto funccall = alloc<FuncCallExpr>();
+                auto funccall = arena.alloc<FuncCallExpr>();
                 funccall->callee = result;
                 while (true) {
                     if (tok.kind == tok_cparen) {
@@ -155,7 +155,7 @@ AstNode* Parser::parse_term() {
                 }
 
                 expect_and_skip(tok_cparen);
-                funccall->args = vec_to_span(args);
+                funccall->args = arena.vec_to_span(args);
                 result = funccall;
             }
         }
@@ -168,12 +168,12 @@ FunctionSignatureDef Parser::parse_func_sign() {
     FunctionSignatureDef sign;
     expect_and_skip(tok_oparen);
 
-    std::vector<ParamDef> params;
+    std::vector<ParamDef*> params;
     while (tok.kind != tok_cparen) {
-        ParamDef param;
-        param.name = consume_id();
+        ParamDef* param = arena.alloc<ParamDef>();
+        param->name = consume_id();
         expect_and_skip(tok_colon);
-        param.type_ann = parse_typeann();
+        param->type_ann = parse_typeann();
 
         if (tok.kind == tok_comma) {
             next();
@@ -187,7 +187,7 @@ FunctionSignatureDef Parser::parse_func_sign() {
     }
 
     expect_and_skip(tok_cparen);
-    sign.params = vec_to_span(params);
+    sign.params = arena.vec_to_span(params);
 
     if (tok.kind == tok_colon) {
         next();  // Skip the :
@@ -220,47 +220,49 @@ AstNode* Parser::parse_stmt() {
     switch (tok.kind) {
         case tok_import: {
             next();  // Skip the 'import'
-            auto stmt = alloc<ImportStmt>();
+            auto stmt = arena.alloc<ImportStmt>();
             stmt->path = parse_path();
             return stmt;
         }
         case tok_struct:
         case tok_object: {
-            auto stmt = alloc<StructDefStmt>();
+            auto stmt = arena.alloc<StructDefStmt>();
             stmt->is_object = tok.kind == tok_object;
             next();  // Skip the 'struct' or 'object'
             stmt->name = consume_id();
             expect_and_skip(tok_obrace);
             ignore_newlines();
 
-            std::vector<FieldDef> fields;
+            std::vector<FieldDef*> fields;
             while (tok.kind != tok_cbrace) {
-                FieldDef field;
-                field.name = consume_id();
+                auto field = arena.alloc<FieldDef>();
+
+                field->name = consume_id();
                 expect_and_skip(tok_colon);
-                field.type_ann = parse_typeann();
+
+                field->type_ann = parse_typeann();
                 fields.push_back(field);
                 ignore_newlines();
             }
 
             expect_and_skip(tok_cbrace);
             ignore_newlines();
-            stmt->fields = vec_to_span(fields);
+            stmt->fields = arena.vec_to_span(fields);
             return stmt;
         }
         case tok_var: {
-            std::vector<VarDef> vardefs;
+            std::vector<VarDef*> vardefs;
             next();  // Skip the var.
             expect(tok_id);
             for (;;) {
-                VarDef var;
-                var.type_ann = nullptr;
-                var.init = nullptr;
-                var.id = consume_id();
+                VarDef* var = arena.alloc<VarDef>();
+                var->type_ann = nullptr;
+                var->init = nullptr;
+                var->id = consume_id();
 
                 if (tok.kind == tok_assign) {
                     next();  // Skip the '='
-                    var.init = parse_expr();
+                    var->init = parse_expr();
                 }
 
                 vardefs.push_back(var);
@@ -280,35 +282,38 @@ AstNode* Parser::parse_stmt() {
             }
 
             for (auto& vardef : vardefs) {
-                vardef.type_ann = typeann;
+                vardef->type_ann = typeann;
             }
 
             if (tok.kind == tok_assign) {
                 next();  // Skip the '='
-                vardefs[vardefs.size() - 1].init = parse_expr();
+                vardefs[vardefs.size() - 1]->init = parse_expr();
             }
 
-            auto stmt = alloc<VarDefStmt>();
-            stmt->vardefs = vec_to_span(vardefs);
+            auto stmt = arena.alloc<VarDefStmt>();
+            stmt->vardefs = arena.vec_to_span(vardefs);
             return stmt;
         }
         case tok_def: {
             next();  // Skip the def
-            auto stmt = alloc<FuncDefStmt>();
+            auto stmt = arena.alloc<FuncDefStmt>();
             stmt->proto = parse_func_proto();
             stmt->block = parse_brace_block();
             return stmt;
-        } break;
+        }
+
+        default:
+            // Parse an expression statement.
+            auto stmt = arena.alloc<ExprStmt>();
+            stmt->expr = parse_expr();
+            return stmt;
     }
 
-    // Parse an expression statement.
-    auto stmt = alloc<ExprStmt>();
-    stmt->expr = parse_expr();
-    return stmt;
+    fixme();
 }
 
 TypeAnnot* Parser::parse_typeann() {
-    TypeAnnot* ann = alloc<TypeAnnot>();
+    TypeAnnot* ann = arena.alloc<TypeAnnot>();
     switch (tok.kind) {
         case tok_uint16:
             ann->kind = ta_uint16;
@@ -372,7 +377,7 @@ TypeAnnot* Parser::parse_typeann() {
 }
 
 Block* Parser::parse_block(TokenKind endtok) {
-    Block* block = alloc<Block>();
+    Block* block = arena.alloc<Block>();
     std::vector<AstNode*> stmts;
 
     while (tok.kind != endtok) {
@@ -393,7 +398,7 @@ Block* Parser::parse_block(TokenKind endtok) {
         }
     }
 
-    block->stmts = vec_to_span(stmts);
+    block->stmts = arena.vec_to_span(stmts);
     return block;
 }
 

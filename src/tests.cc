@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 
+#include "arena.h"
 #include "ast.h"
 #include "diag.h"
 #include "parser.h"
@@ -84,10 +85,10 @@ void scanner_tests() {
 }
 
 void parser_tests() {
-    Arena ast_arena;
-#define PARSE(CODE)                          \
-    Parser p(CODE, 0, "<test>", &ast_arena); \
-    auto block = p.parse();                  \
+    Arena arena;
+#define PARSE(CODE)                     \
+    Parser p(CODE, 0, "<test>", arena); \
+    auto block = p.parse();             \
     auto stmts = block->stmts;
 
     {
@@ -150,7 +151,7 @@ void parser_tests() {
 
         auto stmt = stmts[0]->as<VarDefStmt>();
         EXPECT(stmt->vardefs.size() == 1)
-        EXPECT(stmt->vardefs[0].type_ann->kind == ta_int32);
+        EXPECT(stmt->vardefs[0]->type_ann->kind == ta_int32);
     }
 
     {
@@ -167,23 +168,23 @@ void parser_tests() {
         auto struct_stmt = stmts[0]->as<StructDefStmt>();
         EXPECT(struct_stmt->name == "Foo");
         EXPECT(struct_stmt->fields.size() == 1);
-        EXPECT(struct_stmt->fields[0].name == "s");
-        EXPECT(struct_stmt->fields[0].type_ann->kind == ta_int32);
+        EXPECT(struct_stmt->fields[0]->name == "s");
+        EXPECT(struct_stmt->fields[0]->type_ann->kind == ta_int32);
 
         auto var_a = stmts[1]->as<VarDefStmt>()->vardefs[0];
-        EXPECT(var_a.id == "a");
-        EXPECT(var_a.type_ann->kind == ta_int32);
-        EXPECT(var_a.init->as<IntLitExpr>()->val == 10);
+        EXPECT(var_a->id == "a");
+        EXPECT(var_a->type_ann->kind == ta_int32);
+        EXPECT(var_a->init->as<IntLitExpr>()->val == 10);
 
         auto var_b = stmts[2]->as<VarDefStmt>()->vardefs[0];
-        EXPECT(var_b.id == "b");
-        EXPECT(var_b.type_ann->kind == ta_int32);
-        EXPECT(var_b.init->as<IntLitExpr>()->val == 16);
+        EXPECT(var_b->id == "b");
+        EXPECT(var_b->type_ann->kind == ta_int32);
+        EXPECT(var_b->init->as<IntLitExpr>()->val == 16);
 
         auto var_c = stmts[3]->as<VarDefStmt>()->vardefs[0];
-        EXPECT(var_c.id == "c");
-        EXPECT(var_c.type_ann == nullptr);
-        EXPECT(var_c.init->as<IntLitExpr>()->val == 3);
+        EXPECT(var_c->id == "c");
+        EXPECT(var_c->type_ann == nullptr);
+        EXPECT(var_c->init->as<IntLitExpr>()->val == 3);
     }
 
     {
@@ -193,13 +194,13 @@ void parser_tests() {
 
         auto stmt = stmts[0]->as<VarDefStmt>();
         EXPECT(stmt->vardefs.size() == 1)
-        EXPECT(stmt->vardefs[0].type_ann->kind == ta_unresolved);
-        EXPECT(stmt->vardefs[0].type_ann->unresolved.items[0] == "Foo");
+        EXPECT(stmt->vardefs[0]->type_ann->kind == ta_unresolved);
+        EXPECT(stmt->vardefs[0]->type_ann->unresolved.items[0] == "Foo");
 
         stmt = stmts[1]->as<VarDefStmt>();
         EXPECT(stmt->vardefs.size() == 1)
-        EXPECT(stmt->vardefs[0].type_ann->kind == ta_alias);
-        EXPECT(stmt->vardefs[0].type_ann->of->unresolved.items[0] == "Bar");
+        EXPECT(stmt->vardefs[0]->type_ann->kind == ta_alias);
+        EXPECT(stmt->vardefs[0]->type_ann->of->unresolved.items[0] == "Bar");
     }
 
     {
@@ -211,11 +212,11 @@ void parser_tests() {
         EXPECT(stmt->fields.size() == 2);
 
         auto fields = stmt->fields;
-        EXPECT(fields[0].name == "a");
-        EXPECT(fields[0].type_ann->kind == ta_int32);
-        EXPECT(fields[1].name == "b");
-        EXPECT(fields[1].type_ann->kind == ta_alias);
-        EXPECT(fields[1].type_ann->of->unresolved.items[0] == "Foo");
+        EXPECT(fields[0]->name == "a");
+        EXPECT(fields[0]->type_ann->kind == ta_int32);
+        EXPECT(fields[1]->name == "b");
+        EXPECT(fields[1]->type_ann->kind == ta_alias);
+        EXPECT(fields[1]->type_ann->of->unresolved.items[0] == "Foo");
     }
 
     {
@@ -224,8 +225,8 @@ void parser_tests() {
         EXPECT(stmts.size() == 1);
         auto stmt = stmts[0]->as<StructDefStmt>();
         EXPECT(stmt->fields.size() == 1);
-        EXPECT(stmt->fields[0].name == "a");
-        EXPECT(stmt->fields[0].type_ann->kind == ta_int32);
+        EXPECT(stmt->fields[0]->name == "a");
+        EXPECT(stmt->fields[0]->type_ann->kind == ta_int32);
     }
 
     {
@@ -240,10 +241,10 @@ void parser_tests() {
 
         auto funcdefstmt = stmts[0]->as<FuncDefStmt>();
         EXPECT(funcdefstmt->proto.sign.params.size() == 2);
-        EXPECT(funcdefstmt->proto.sign.params[0].name == "renderer");
-        EXPECT(funcdefstmt->proto.sign.params[1].name == "x");
+        EXPECT(funcdefstmt->proto.sign.params[0]->name == "renderer");
+        EXPECT(funcdefstmt->proto.sign.params[1]->name == "x");
 
-        auto typeann = funcdefstmt->proto.sign.params[0].type_ann;
+        auto typeann = funcdefstmt->proto.sign.params[0]->type_ann;
         EXPECT(typeann->kind == ta_alias &&
                typeann->of->unresolved.items[0] == "re" &&
                typeann->of->unresolved.items[1] == "Renderer" &&
@@ -251,7 +252,7 @@ void parser_tests() {
 
         auto fblock = funcdefstmt->block;
         EXPECT(fblock->stmts.size() == 2);
-        EXPECT(fblock->stmts[0]->as<VarDefStmt>()->vardefs[0].id == "bar");
+        EXPECT(fblock->stmts[0]->as<VarDefStmt>()->vardefs[0]->id == "bar");
 
         auto expr = fblock->stmts[1]->as<ExprStmt>()->expr;
         EXPECT(expr->kind == ak_funccall);

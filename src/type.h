@@ -5,6 +5,8 @@
 namespace swan {
 
 enum TypeKind {
+    tk_bool,
+    tk_int8,
     tk_int16,
     tk_int32,
     tk_int64,

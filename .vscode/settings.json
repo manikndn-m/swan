@@ -1,6 +1,6 @@
 {
     "editor.formatOnSave": true,
-    "editor.fontSize": 33,
+    "editor.fontSize": 31,
     "breadcrumbs.enabled": false,
     "editor.minimap.enabled": false,
     "editor.lineNumbers": "off",
