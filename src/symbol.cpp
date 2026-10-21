@@ -1,3 +1,4 @@
 #include "symbol.h"
 
-namespace swan {}
+namespace swan {
+}

@@ -34,8 +34,8 @@ enum Visibility {
 
 struct TypeAnnot {
     TypeAnnotKind kind;
-    TypeAnnot* of;
-    bool is_mut;  // Applies to ta_alias.
+    TypeAnnot *of;
+    bool is_mut; // Applies to ta_alias.
 
     Path unresolved;
 };
@@ -69,15 +69,18 @@ struct AstNode {
     SourcePos pos;
     Visibility visibility;
 
-    AstNode(AstNodeKind kind) : kind(kind) {
+    AstNode(AstNodeKind kind) : kind(kind)
+    {
     }
 
-    virtual void dummy() {
+    virtual void dummy()
+    {
     }
 
     template <typename T>
-    T* as() {
-        auto ptr = dynamic_cast<T*>(this);
+    T *as()
+    {
+        auto ptr = dynamic_cast<T *>(this);
         if (ptr == nullptr) {
             panic("casting to the wrong type");
         }
@@ -85,8 +88,9 @@ struct AstNode {
     }
 };
 
-#define AST_NODE(T, K) \
-    T() : AstNode(K) { \
+#define AST_NODE(T, K)                                                         \
+    T() : AstNode(K)                                                           \
+    {                                                                          \
     }
 
 enum UnaryOp {
@@ -102,12 +106,12 @@ enum BinOp {
 
 };
 
-#define N(T, K)          \
-    struct T : AstNode { \
+#define N(T, K)                                                                \
+    struct T : AstNode {                                                       \
         AST_NODE(T, K);
 #define F(T, N) T N;
-#define NEND \
-    }        \
+#define NEND                                                                   \
+    }                                                                          \
     ;
 
 #include "nodedefs.inc"
@@ -119,19 +123,19 @@ struct Block;
 
 struct FuncDefStmt : AstNode {
     FunctionProtoDef proto;
-    Block* block;
+    Block *block;
 
     AST_NODE(FuncDefStmt, ak_funcdef);
 };
 
 struct ExprStmt : AstNode {
-    AstNode* expr;
+    AstNode *expr;
 
     AST_NODE(ExprStmt, ak_exprstmt);
 };
 
 struct Block {
-    Span<AstNode*> stmts;
+    Span<AstNode *> stmts;
 };
 
-}  // namespace swan
+} // namespace swan

@@ -2,7 +2,8 @@
 
 namespace swan {
 
-void dbgprint_expr(AstNode* expr, int level) {
+void dbgprint_expr(AstNode *expr, int level)
+{
     int i = level;
     while (i--) {
         print("-");
@@ -24,4 +25,4 @@ void dbgprint_expr(AstNode* expr, int level) {
     }
 }
 
-}  // namespace swan
+} // namespace swan

@@ -11,29 +11,30 @@
 using namespace swan;
 
 // the "expect" macro...
-#define EXPECT(C)                                                          \
-    {                                                                      \
-        if (!(C)) {                                                        \
-            std::cout << "\nCondition '" << #C << "' at line " << __LINE__ \
-                      << " failed.\n";                                     \
-            std::exit(0);                                                  \
-        }                                                                  \
+#define EXPECT(C)                                                              \
+    {                                                                          \
+        if (!(C)) {                                                            \
+            std::cout << "\nCondition '" << #C << "' at line " << __LINE__     \
+                      << " failed.\n";                                         \
+            std::exit(0);                                                      \
+        }                                                                      \
     }
 
-void scanner_tests() {
-#define TOKENIZE(STR)                 \
-    Scanner s(STR, 0, "<test-file>"); \
-    std::vector<Token> vec;           \
-    Token tok;                        \
-    s.next(tok);                      \
-    try {                             \
-        while (tok.kind != tok_eof) { \
-            vec.push_back(tok);       \
-            s.next(tok);              \
-        }                             \
-    } catch (ScannerError e) {        \
-        error(e.pos, e.msg);          \
-        std::exit(-1);                \
+void scanner_tests()
+{
+#define TOKENIZE(STR)                                                          \
+    Scanner s(STR, 0, "<test-file>");                                          \
+    std::vector<Token> vec;                                                    \
+    Token tok;                                                                 \
+    s.next(tok);                                                               \
+    try {                                                                      \
+        while (tok.kind != tok_eof) {                                          \
+            vec.push_back(tok);                                                \
+            s.next(tok);                                                       \
+        }                                                                      \
+    } catch (ScannerError e) {                                                 \
+        error(e.pos, e.msg);                                                   \
+        std::exit(-1);                                                         \
     }
 
     auto check_kinds = [](std::vector<Token> v, std::vector<TokenKind> kinds) {
@@ -84,11 +85,12 @@ void scanner_tests() {
     }
 }
 
-void parser_tests() {
+void parser_tests()
+{
     Arena arena;
-#define PARSE(CODE)                     \
-    Parser p(CODE, 0, "<test>", arena); \
-    auto block = p.parse();             \
+#define PARSE(CODE)                                                            \
+    Parser p(CODE, 0, "<test>", arena);                                        \
+    auto block = p.parse();                                                    \
     auto stmts = block->stmts;
 
     {
@@ -155,14 +157,13 @@ void parser_tests() {
     }
 
     {
-        PARSE(
-            "struct Foo {\n"
-            "  s: int32\n"
-            "}\n"
-            "\n"
-            "var a: int32 = 10\n"
-            "var b: int32 = 16\n"
-            "var c = 3\n");
+        PARSE("struct Foo {\n"
+              "  s: int32\n"
+              "}\n"
+              "\n"
+              "var a: int32 = 10\n"
+              "var b: int32 = 16\n"
+              "var c = 3\n");
         EXPECT(stmts.size() == 4);
 
         auto struct_stmt = stmts[0]->as<StructDefStmt>();
@@ -231,8 +232,7 @@ void parser_tests() {
 
     {
         // FIXME
-        PARSE(
-            "def foo(renderer: &mut re.Renderer, x: int) { \
+        PARSE("def foo(renderer: &mut re.Renderer, x: int) { \
                         var bar: int \n\
                         print() \
             }");
@@ -261,12 +261,13 @@ void parser_tests() {
     }
 }
 
-#define RUN(F)                              \
-    std::cout << "Running " << #F << "..."; \
-    F();                                    \
+#define RUN(F)                                                                 \
+    std::cout << "Running " << #F << "...";                                    \
+    F();                                                                       \
     std::cout << " passed\n";
 
-int main() {
+int main()
+{
     RUN(scanner_tests);
     RUN(parser_tests);
     std::cout << "All tests passed.\n";

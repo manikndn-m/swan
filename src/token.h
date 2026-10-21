@@ -10,7 +10,8 @@ struct SourcePos {
     int line, col;
     int fileid;
 
-    SourcePos() : line(1), col(1) {
+    SourcePos() : line(1), col(1)
+    {
     }
 };
 
@@ -53,9 +54,10 @@ struct Token {
 
     std::string to_string() const;
 
-    void dbgprint() {
+    void dbgprint()
+    {
         std::cout << to_string() << "\n";
     }
 };
 
-}  // namespace swan
+} // namespace swan

@@ -1,3 +1,4 @@
 #include "arena.h"
 
-namespace swan {}
+namespace swan {
+}

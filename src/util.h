@@ -11,67 +11,78 @@ namespace swan {
 namespace fs = std::filesystem;
 
 template <typename T>
-void print(T t) {
+void print(T t)
+{
     std::cout << t;
 }
 
 template <typename T, typename U, typename... Args>
-void print(T t, U u, Args... args) {
+void print(T t, U u, Args... args)
+{
     std::cout << t;
     print(u, args...);
 }
 
 template <typename... Args>
-void panic(Args... args) {
+void panic(Args... args)
+{
     print("\npanic: ", args...);
 }
 
 [[noreturn]]
-inline void fixme_() {
+inline void fixme_()
+{
     std::abort();
 }
 
-#define fixme()                                                         \
-    {                                                                   \
-        panic("internal compiler error at ", __LINE__, " : ", __FILE__, \
-              " : ");                                                   \
-        fixme_();                                                       \
+#define fixme()                                                                \
+    {                                                                          \
+        panic("internal compiler error at ", __LINE__, " : ", __FILE__,        \
+              " : ");                                                          \
+        fixme_();                                                              \
     }
 
 using StringRef = std::string_view;
 
 template <typename T>
 class Span {
-    T* ptr;
+    T *ptr;
     size_t size_;
 
-   public:
-    Span() {
+  public:
+    Span()
+    {
         this->ptr = nullptr;
     }
 
-    Span(T* ptr, size_t size) : ptr(ptr), size_(size) {
+    Span(T *ptr, size_t size) : ptr(ptr), size_(size)
+    {
     }
 
-    T* begin() {
+    T *begin()
+    {
         return ptr;
     }
 
-    T* end() {
+    T *end()
+    {
         return ptr + size_;
     }
 
-    T operator[](size_t idx) {
+    T operator[](size_t idx)
+    {
         return ptr[idx];
     }
 
-    size_t size() const {
+    size_t size() const
+    {
         return size_;
     }
 };
 
 template <typename F>
-auto benchmark(F fn, int iterations) {
+auto benchmark(F fn, int iterations)
+{
     const auto start = std::chrono::system_clock::now();
     while (iterations-- > 0) {
         fn();
@@ -81,10 +92,10 @@ auto benchmark(F fn, int iterations) {
     return secs.count();
 }
 
-}  // namespace swan
+} // namespace swan
 
 #define DP(X) std::cout << X << std::endl;
 
-#define DPE(X)                                  \
-    std::cout << #X << " = " << X << std::endl; \
+#define DPE(X)                                                                 \
+    std::cout << #X << " = " << X << std::endl;                                \
     std::exit(-1);

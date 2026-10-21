@@ -1,3 +1,4 @@
 #include "type.h"
 
-namespace swan {}
+namespace swan {
+}

@@ -20,7 +20,7 @@ struct CompilerError {
 class Compiler {
     fs::path search_path;
     Scope *toplevel_scope, *curr_scope;
-    std::stack<Scope*> scope_stack;
+    std::stack<Scope *> scope_stack;
     Arena arena;
     std::ofstream cfile;
     std::stringstream c_code;
@@ -29,18 +29,21 @@ class Compiler {
     StringRef module_prefix;
 
     template <typename T>
-    void emit(T t) {
+    void emit(T t)
+    {
         c_code << t;
     }
 
     template <typename T, typename U, typename... Args>
-    void emit(T t, U u, Args... args) {
+    void emit(T t, U u, Args... args)
+    {
         c_code << t;
         emit(u, args...);
     }
 
     template <typename T>
-    void err(T t) {
+    void err(T t)
+    {
         msg << t;
         ParserError e;
         e.msg = msg.str();
@@ -49,35 +52,41 @@ class Compiler {
     }
 
     template <typename T, typename U, typename... Args>
-    void err(T t, U u, Args... args) {
+    void err(T t, U u, Args... args)
+    {
         msg << t;
         err(u, args...);
     }
 
     template <typename T>
-    std::string strref_conc(std::string accum, T t) {
+    std::string strref_conc(std::string accum, T t)
+    {
         accum = accum + std::string(t);
         return accum;
     }
 
     template <typename T, typename U, typename... Args>
-    std::string strref_conc(std::string accum, T t, U u, Args... args) {
+    std::string strref_conc(std::string accum, T t, U u, Args... args)
+    {
         accum = accum + std::string(t);
         return strref_conc(accum, u, args...);
     }
 
     template <typename... Args>
-    std::string str_from_strrefs(Args... args) {
+    std::string str_from_strrefs(Args... args)
+    {
         return strref_conc("", args...);
     }
 
     template <typename... Args>
-    StringRef alloc_conc_strrefs(Args... args) {
+    StringRef alloc_conc_strrefs(Args... args)
+    {
         return arena.alloc_str(str_from_strrefs(args...));
     }
 
-   public:
-    Compiler(fs::path search_path) {
+  public:
+    Compiler(fs::path search_path)
+    {
         this->search_path = search_path;
         this->toplevel_scope = new Scope(nullptr);
         this->curr_scope = this->toplevel_scope;
@@ -85,7 +94,8 @@ class Compiler {
         this->temp_id = 0;
     }
 
-    ~Compiler() {
+    ~Compiler()
+    {
         while (!this->scope_stack.empty()) {
             delete this->scope_stack.top();
             this->scope_stack.pop();
@@ -94,22 +104,22 @@ class Compiler {
 
     void compile(fs::path filepath, bool is_main_mod);
 
-   private:
+  private:
     fs::path find_module_file(Path p);
     Symbol resolve_path(Path p);
-    Type* type_ann_to_type(TypeAnnot* typeann, Scope* scope);
-    void add_symbol_from_stmt(AstNode* stmt, Scope* scope);
+    Type *type_ann_to_type(TypeAnnot *typeann, Scope *scope);
+    void add_symbol_from_stmt(AstNode *stmt, Scope *scope);
 
-    Type* infer_type(AstNode* expr, Scope* scope);
-    void emit_expr(AstNode* expr, Scope* scope);
-    StringRef type_to_ctype(Type* type, Scope* scope);
+    Type *infer_type(AstNode *expr, Scope *scope);
+    void emit_expr(AstNode *expr, Scope *scope);
+    StringRef type_to_ctype(Type *type, Scope *scope);
 
     struct Tmp {
         int id;
     };
 
-    void emit_block(Block* block, bool surround_with_braces);
-    void emit_stmt(AstNode* stmt);
+    void emit_block(Block *block, bool surround_with_braces);
+    void emit_stmt(AstNode *stmt);
 };
 
-}  // namespace swan
+} // namespace swan

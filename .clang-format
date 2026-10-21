@@ -1,7 +1,12 @@
-BasedOnStyle: Google
+BasedOnStyle: LLVM
 IndentWidth: 4
 
 AllowShortFunctionsOnASingleLine: None
 
 BreakTemplateDeclarations: Yes
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true
+
 
