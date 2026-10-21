@@ -53,13 +53,6 @@ void scanner_tests()
 
     {
         TOKENIZE("import std.io\n a ");
-        //        EXP(vec.size() == 16);
-
-        // Basic sanity check...
-        /* for (auto tok : vec) {
-             tok.dbgprint();
-         }
-        */
     }
 
     {

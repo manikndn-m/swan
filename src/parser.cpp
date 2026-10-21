@@ -40,10 +40,10 @@ BinOp tok_to_binop(TokenKind k)
         fixme();
     }
 
-    return BinOp(0);
+    fixme();
 }
 
-bool tok_is_one_of(TokenKind k, std::vector<TokenKind> v)
+bool tok_is_one_of(TokenKind k, const std::vector<TokenKind> &v)
 {
     return std::find(v.begin(), v.end(), k) != v.end();
 }
@@ -52,7 +52,8 @@ bool tok_is_one_of(TokenKind k, std::vector<TokenKind> v)
     AstNode *Parser::FN()                                                      \
     {                                                                          \
         auto result = NEXTFN();                                                \
-        while (tok_is_one_of(tok.kind, TOKS)) {                                \
+        static std::vector<TokenKind> toks = TOKS;                             \
+        while (tok_is_one_of(tok.kind, toks)) {                                \
             auto left = result;                                                \
             result = arena.alloc<BinExpr>();                                   \
             result->as<BinExpr>()->op = tok_to_binop(tok.kind);                \
