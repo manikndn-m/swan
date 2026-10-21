@@ -15,21 +15,21 @@ endif()
 
 include_directories(vendor)
 
-set(SOURCES src/token.cc
-            src/scanner.cc
-            src/parser.cc
-            src/symbol.cc
-            src/diag.cc
-            src/type.cc
-            src/compiler.cc
-            src/util.cc
-            src/ast.cc
-            src/arena.cc)
+set(SOURCES src/token.cpp
+            src/scanner.cpp
+            src/parser.cpp
+            src/symbol.cpp
+            src/diag.cpp
+            src/type.cpp
+            src/compiler.cpp
+            src/util.cpp
+            src/ast.cpp
+            src/arena.cpp)
 
 add_library(swan ${SOURCES})
 
-add_executable(swanc src/swanc.cc)
-add_executable(tests src/tests.cc)
+add_executable(swanc src/swanc.cpp)
+add_executable(tests src/tests.cpp)
 
 target_link_libraries(swanc swan)
 target_link_libraries(tests swan)
