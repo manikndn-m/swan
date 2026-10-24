@@ -23,6 +23,27 @@ void print(T t, U u, Args... args)
     print(u, args...);
 }
 
+template <typename T>
+void buildstr_(std::string &accum, T t)
+{
+    accum += t;
+}
+
+template <typename T, typename U, typename... Args>
+void buildstr_(std::string &accum, T t, U u, Args... args)
+{
+    accum += t;
+    buildstr_(accum, u, args...);
+}
+
+template <typename... Args>
+std::string buildstr(Args... args)
+{
+    std::string accum;
+    buildstr_(accum, args...);
+    return accum;
+}
+
 template <typename... Args>
 void panic(Args... args)
 {
@@ -83,12 +104,14 @@ class Span {
 template <typename F>
 auto benchmark(F fn, int iterations)
 {
-    const auto start = std::chrono::system_clock::now();
+    auto start = std::chrono::system_clock::now();
     while (iterations-- > 0) {
         fn();
     }
-    const auto stop = std::chrono::system_clock::now();
-    const auto secs = std::chrono::duration<double>(stop - start);
+
+    auto stop = std::chrono::system_clock::now();
+    auto secs = std::chrono::duration<double>(stop - start);
+
     return secs.count();
 }
 

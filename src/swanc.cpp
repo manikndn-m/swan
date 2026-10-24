@@ -21,9 +21,8 @@ int main(int argc, char *argv[])
         Compiler comp(search_path);
         file_path = fs::absolute(file_path);
         comp.compile(file_path, true);
-    } catch (CompilerError e) {
-        std::cout << "Error: " << e.message << '\n';
-        return -1;
+    } catch (HaltToken ht) {
+        std::abort();
     }
 
     return 0;

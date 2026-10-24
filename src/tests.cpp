@@ -32,9 +32,8 @@ void scanner_tests()
             vec.push_back(tok);                                                \
             s.next(tok);                                                       \
         }                                                                      \
-    } catch (ScannerError e) {                                                 \
-        error(e.pos, e.msg);                                                   \
-        std::exit(-1);                                                         \
+    } catch (HaltToken e) {                                                    \
+        std::abort();                                                          \
     }
 
     auto check_kinds = [](std::vector<Token> v, std::vector<TokenKind> kinds) {

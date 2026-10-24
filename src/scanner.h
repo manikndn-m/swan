@@ -7,11 +7,6 @@
 
 namespace swan {
 
-struct ScannerError {
-    std::string msg;
-    SourcePos pos;
-};
-
 class Scanner {
     std::string program, filename;
     std::string::iterator it, end;
@@ -43,15 +38,6 @@ class Scanner {
         return num;
     }
 
-    template <typename... Args>
-    void err(std::string msg)
-    {
-        ScannerError e;
-        e.msg = msg;
-        e.pos = pos;
-        throw e;
-    }
-
     void take_while(std::string &acc, std::function<bool(char)> pred);
 
   public:
@@ -67,9 +53,9 @@ class Scanner {
 #undef K
     }
 
-    SourcePos curpos() const
+    SourceRange curpos() const
     {
-        return pos;
+        return SourceRange{.start = pos, .end = pos};
     }
 
     void next(Token &out);

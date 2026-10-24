@@ -1,5 +1,6 @@
 #include "scanner.h"
 
+#include "diag.h"
 #include <cassert>
 #include <functional>
 #include <unordered_map>
@@ -35,7 +36,7 @@ void Scanner::next(Token &out)
         advance();
 
         if (eof() || *it == endc) {
-            err("unterminated escape sequence");
+            err(curpos(), "unterminated escape sequence");
         }
 
         switch (*it) {
@@ -52,7 +53,7 @@ void Scanner::next(Token &out)
             advance();
             return '\b';
         default:
-            err("unrecognized escape sequence");
+            err(curpos(), "unrecognized escape sequence");
         }
 
         return char(0);
@@ -72,10 +73,11 @@ void Scanner::next(Token &out)
         return;
     }
 
-    out.start_pos = pos;
+    out.srange.start = pos;
 
     if (*it == '\r') {
-        err("carriage return characters are not supported, use only line feed "
+        err(curpos(),
+            "carriage return characters are not supported, use only line feed "
             "characters for newlines");
     }
 
@@ -105,7 +107,7 @@ void Scanner::next(Token &out)
             pos.line++;
             is_lb = true;
         } else {
-            err("unrecognized character '/' (ASCII code 47)");
+            err(curpos(), "unrecognized character '/' (ASCII code 47)");
         }
     }
 
@@ -170,7 +172,7 @@ void Scanner::next(Token &out)
         advance();
 
         if (eof()) {
-            err("unterminated character literal");
+            err(curpos(), "unterminated character literal");
         }
 
         uint64_t ch;
@@ -183,7 +185,7 @@ void Scanner::next(Token &out)
         }
 
         if (eof() || *it != '\'') {
-            err("unterminated character literal");
+            err(curpos(), "unterminated character literal");
         }
 
         advance();
@@ -307,12 +309,13 @@ void Scanner::next(Token &out)
             SCO(':', tok_colon)
 
         default:
-            err(std::string("unrecognized character '") + *it +
-                "' (ASCII code " + std::to_string(int(*it)) + ")");
+            err(curpos(), std::string("unrecognized character '") + *it +
+                              "' (ASCII code " + std::to_string(int(*it)) +
+                              ")");
         }
     }
 
-    out.end_pos = pos;
+    out.srange.end = pos;
 } // namespace swan
 
 } // namespace swan

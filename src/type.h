@@ -1,5 +1,6 @@
 #pragma once
 
+#include "arena.h"
 #include "ast.h"
 
 namespace swan {
@@ -34,5 +35,11 @@ struct Type {
 
     Type *of; // Applies if 'kind' is one of Alias, Array.
 };
+
+struct Scope;
+
+Type *type_ann_to_type(TypeAnnot *typeann, Scope *scope, Arena &arena);
+Type *infer_type(AstNode *expr, Scope *scope, Arena &arena);
+StringRef type_to_ctype(Type *type, Scope *scope, Arena &arena);
 
 } // namespace swan

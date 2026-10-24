@@ -33,6 +33,32 @@ class Arena {
         memcpy(ptr, str.data(), sizeof(char) * str.size());
         return StringRef(ptr, str.size());
     }
+
+    template <typename T>
+    std::string strref_conc(std::string accum, T t)
+    {
+        accum = accum + std::string(t);
+        return accum;
+    }
+
+    template <typename T, typename U, typename... Args>
+    std::string strref_conc(std::string accum, T t, U u, Args... args)
+    {
+        accum = accum + std::string(t);
+        return strref_conc(accum, u, args...);
+    }
+
+    template <typename... Args>
+    std::string str_from_strrefs(Args... args)
+    {
+        return strref_conc("", args...);
+    }
+
+    template <typename... Args>
+    StringRef conc_srefs(Args... args)
+    {
+        return alloc_str(str_from_strrefs(args...));
+    }
 };
 
 } // namespace swan

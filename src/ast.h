@@ -66,7 +66,7 @@ enum AstNodeKind {
 
 struct AstNode {
     AstNodeKind kind;
-    SourcePos pos;
+    SourceRange srange;
     Visibility visibility;
 
     AstNode(AstNodeKind kind) : kind(kind)

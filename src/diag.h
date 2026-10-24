@@ -5,18 +5,14 @@
 
 namespace swan {
 
-template <typename... Args>
-void error(SourcePos pos, Args... args)
-{
-    print("error:", pos.line, ":", pos.col, ": ", args...);
-    print("\n");
-}
+struct HaltToken {};
 
 template <typename... Args>
-void warning(SourcePos pos, Args... args)
+void err(SourceRange srange, Args... args)
 {
-    print("warning:", pos.line, ":", pos.col, args...);
+    print("error:", srange.start.line, ":", srange.start.col, ": ", args...);
     print("\n");
+    throw HaltToken{};
 }
 
 } // namespace swan

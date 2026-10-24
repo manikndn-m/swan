@@ -12,10 +12,6 @@
 
 namespace swan {
 
-struct CompilerError {
-    std::string message;
-};
-
 // The entry point to the compiler.
 class Compiler {
     fs::path search_path;
@@ -39,49 +35,6 @@ class Compiler {
     {
         c_code << t;
         emit(u, args...);
-    }
-
-    template <typename T>
-    void err(T t)
-    {
-        msg << t;
-        ParserError e;
-        e.msg = msg.str();
-        std::cout << msg.str() << std::endl;
-        throw e;
-    }
-
-    template <typename T, typename U, typename... Args>
-    void err(T t, U u, Args... args)
-    {
-        msg << t;
-        err(u, args...);
-    }
-
-    template <typename T>
-    std::string strref_conc(std::string accum, T t)
-    {
-        accum = accum + std::string(t);
-        return accum;
-    }
-
-    template <typename T, typename U, typename... Args>
-    std::string strref_conc(std::string accum, T t, U u, Args... args)
-    {
-        accum = accum + std::string(t);
-        return strref_conc(accum, u, args...);
-    }
-
-    template <typename... Args>
-    std::string str_from_strrefs(Args... args)
-    {
-        return strref_conc("", args...);
-    }
-
-    template <typename... Args>
-    StringRef alloc_conc_strrefs(Args... args)
-    {
-        return arena.alloc_str(str_from_strrefs(args...));
     }
 
   public:

@@ -1,6 +1,7 @@
 #include "parser.h"
 
 #include "ast.h"
+#include "diag.h"
 #include "util.h"
 
 namespace swan {
@@ -190,7 +191,7 @@ FunctionSignatureDef Parser::parse_func_sign()
         }
 
         if (eof()) {
-            err("unexpected EOF");
+            err(tok.srange, "unexpected EOF");
         }
 
         params.push_back(param);
@@ -357,7 +358,7 @@ TypeAnnot *Parser::parse_typeann()
         break;
 
     case tok_bool:
-        ann->kind = ta_int32; // FIXME: Use a proper bool type.
+        ann->kind = ta_bool;
         next();
         break;
 
@@ -402,7 +403,7 @@ Block *Parser::parse_block(TokenKind endtok)
             break;
         }
         if (tok.kind == tok_eof) {
-            err("unexpected eof");
+            err(tok.srange, "unexpected eof");
         }
         auto stmt = parse_stmt();
         stmts.push_back(stmt);

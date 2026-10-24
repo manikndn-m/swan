@@ -15,6 +15,10 @@ struct SourcePos {
     }
 };
 
+struct SourceRange {
+    SourcePos start, end;
+};
+
 enum TokenKind {
     tok_id,
     tok_strlit,
@@ -45,7 +49,7 @@ struct nlsuffix {
 };
 
 struct Token {
-    SourcePos start_pos, end_pos;
+    SourceRange srange;
     TokenKind kind;
     std::string strval, idval;
     uint64_t charval;

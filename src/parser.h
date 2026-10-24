@@ -5,15 +5,11 @@
 
 #include "arena.h"
 #include "ast.h"
+#include "diag.h"
 #include "scanner.h"
 #include "util.h"
 
 namespace swan {
-
-struct ParserError {
-    std::string msg;
-    SourcePos pos;
-};
 
 class Parser {
     Scanner s;
@@ -26,16 +22,6 @@ class Parser {
         StringRef sref = arena.alloc_str(tok.idval);
         next(); // Skip the identifier
         return sref;
-    }
-
-    template <typename... Args>
-    void err(std::string msg)
-    {
-        ParserError e;
-        e.msg = msg;
-        e.pos = s.curpos();
-        std::cout << msg << std::endl;
-        throw e;
     }
 
     void expect(TokenKind k)

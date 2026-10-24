@@ -1,12 +1,14 @@
 #include "compiler.h"
 
+#include "diag.h"
+#include "symbol.h"
 #include <variant>
 
 namespace swan {
 
 fs::path Compiler::find_module_file(Path p)
 {
-    return "";
+    return fs::path();
 }
 
 Symbol Compiler::resolve_path(Path p)
@@ -98,9 +100,9 @@ StringRef Compiler::type_to_ctype(Type *type, Scope *scope)
     case tk_struct:
         return type->struct_->canon_name;
     case tk_alias:
-        return alloc_conc_strrefs(type_to_ctype(type->of, scope), " *");
+        return arena.conc_srefs(type_to_ctype(type->of, scope), " *");
     case tk_shared:
-        return alloc_conc_strrefs(type_to_ctype(type->of, scope), " *");
+        return arena.conc_srefs(type_to_ctype(type->of, scope), " *");
     default:
         fixme();
     }
@@ -185,7 +187,7 @@ void Compiler::add_symbol_from_stmt(AstNode *stmt, Scope *scope)
             f.type = type_ann_to_type(fielddef->type_ann, scope);
         }
 
-        struct_->canon_name = alloc_conc_strrefs(module_prefix, sdstmt->name);
+        struct_->canon_name = arena.conc_srefs(module_prefix, sdstmt->name);
         struct_->struct_type = arena.alloc<Type>();
         struct_->struct_type->kind = tk_struct;
         struct_->struct_type->struct_ = struct_;
@@ -209,7 +211,7 @@ void Compiler::add_symbol_from_stmt(AstNode *stmt, Scope *scope)
             Var *var = new Var();
             var->type = type;
             if (scope == toplevel_scope) {
-                var->canon_name = alloc_conc_strrefs(module_prefix, vardef->id);
+                var->canon_name = arena.conc_srefs(module_prefix, vardef->id);
             } else {
                 var->canon_name = vardef->id;
             }
@@ -260,7 +262,7 @@ void Compiler::emit_stmt(AstNode *stmt)
 
             StringRef cvar_name;
             if (curr_scope == toplevel_scope) {
-                cvar_name = alloc_conc_strrefs(module_prefix, vardef->id);
+                cvar_name = arena.conc_srefs(module_prefix, vardef->id);
             } else {
                 cvar_name = vardef->id;
             }
@@ -275,8 +277,7 @@ void Compiler::emit_stmt(AstNode *stmt)
     } break;
     case ak_structdef: {
         auto sdstmt = stmt->as<StructDefStmt>();
-        emit("struct ", alloc_conc_strrefs(module_prefix, sdstmt->name),
-             " {\n");
+        emit("struct ", arena.conc_srefs(module_prefix, sdstmt->name), " {\n");
 
         for (auto fielddef : sdstmt->fields) {
             auto type = type_ann_to_type(fielddef->type_ann, curr_scope);
@@ -317,12 +318,8 @@ void Compiler::compile(fs::path file_path, bool is_main_mod)
     try {
         Parser parser(program, 0, file_path.string(), arena);
         toplevel_block = parser.parse();
-    } catch (ParserError pe) {
-        std::cout << pe.msg << std::endl;
-        std::exit(-1);
-    } catch (ScannerError se) {
-        std::cout << se.msg << std::endl;
-        std::exit(-1);
+    } catch (HaltToken e) {
+        std::abort();
     }
 
     DP(toplevel_block->stmts.size());
